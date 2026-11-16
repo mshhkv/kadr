@@ -90,6 +90,19 @@ def feature_set(features, tracking):
     return out
 
 
+def missing_glyphs(fontname, text):
+    """the characters of `text` that no font of the chain «A|B» has (drawn as the first font's empty box), in order,
+    each once; spaces, line breaks and the invisible joiners / selectors of emoji are not characters to draw"""
+    chain = [face(n) for n in str(fontname).split('|')]
+    out = []
+    for ch in text:
+        if ch.isspace() or ch in out or ord(ch) < 32 or ord(ch) in (0x200B, 0x200C, 0x200D, 0x2060, 0xFEFF) or 0xFE00 <= ord(ch) <= 0xFE0F:
+            continue
+        if not any(f.get_char_index(ch) for f in chain):
+            out.append(ch)
+    return out
+
+
 @functools.lru_cache(1024)
 def text_units(font, size, text, align, line_height, tracking, features, by):
     """a text animator's units — (char indices, x0, x1, baseline y): letters, or words — and the font's descent; they

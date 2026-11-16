@@ -55,6 +55,24 @@ def run(film, strict=False):
                 if err:
                     issues.append(Issue('error', f'шейдер {sh.name} не собирается:\n{err}', L['id']))
 
+    for L in film.layers:                                      # a counter's text is a formula: its characters are known only by asking
+        if L['type'] == 'text' and L.get('text_expr') is not None:
+            from .render import missing_glyphs
+            a_, b_ = L['in'], min(L['out'], film.duration)
+            seen_txt = ''
+            for j in range(9):
+                try:
+                    seen_txt += str(L['text_expr'].at(a_ + (b_ - a_) * j / 8))
+                except Exception:                              # a formula that fails is reported where formulas are
+                    break
+            try:
+                miss = missing_glyphs(L['font'], seen_txt)
+            except (OSError, ValueError):
+                miss = []
+            if miss:
+                issues.append(Issue('warn', 'в шрифте ' + L['font'].split('#')[0] + ' нет знаков ' + ', '.join(f'«{c}» (U+{ord(c):04X})' for c in miss[:8])
+                                    + ' — на их месте будет пустой прямоугольник. Дайте запасной шрифт списком (font: [свой, Inter-Regular]) или замените знак', L['id']))
+
     PART = {'label': 'подпись', 'src': 'источник', 'spname': 'имя в плашке', 'spsub': 'подпись в плашке', 'spbar': 'полоса плашки',
             'st1': 'штамп', 'st2': 'штамп, вторая строка', 'stline': 'штамп, линия', 'paper': 'бумага', 'ghost': 'номер главы',
             'kicker': 'надзаголовок', 'title': 'заголовок'}
@@ -152,6 +170,13 @@ def run(film, strict=False):
                     if d > 0.5:
                         unsafe.setdefault(side, []).append((i, d))
         for a, b in ranges(off if L['id'] not in styled else ()):
+            # a layer that flies in from outside the frame, or out of it, is outside for its first or last moments —
+            # that is the move itself (five reels of 16.11.2026: 237 of 248 such findings were these, and the real
+            # ones were lost among them). Reported: outside in the middle of its life, or for longer than a second
+            # (its first and last moments on screen: a child of a group that ends has no end of its own in the document)
+            edge = a - 2 < i0 or b + 2 >= i1 or bs[a - 1] is None or bs[a - 2] is None or bs[b + 1] is None or bs[b + 2] is None
+            if edge and (b - a + 1) / fps <= 1.0 and (b - a + 1) < 0.5 * sum(x is not None for x in bs):
+                continue
             at(a, b, L['id'], 'слой виден по времени, но целиком за кадром')
         if L['type'] == 'image' and L['fit'] == 'cover':
             gaps = {}
@@ -176,7 +201,8 @@ def run(film, strict=False):
         tr, wd = [None] * N, [None] * N
         for i in range(max(0, i0 - 1), min(N, i1 + 1)):
             tr[i] = place(film, L, i / fps)
-            wd[i] = top_edge(film, L, i / fps, tr[i]) if tr[i] is not None and L['type'] != 'group' else np.zeros(2)
+            # a counter (a text that is a formula) changes width whenever a digit does: that is its text, not a move
+            wd[i] = top_edge(film, L, i / fps, tr[i]) if tr[i] is not None and L['type'] != 'group' and L.get('text_expr') is None else np.zeros(2)
         dvs_all, fast = {}, []
         for i in range(max(1, i0), min(N - 1, i1)):
             if tr[i - 1] is None or tr[i] is None or tr[i + 1] is None:

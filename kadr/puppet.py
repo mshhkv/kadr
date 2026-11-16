@@ -300,7 +300,7 @@ def audit(F, L, limit=500):
     area = lambda P: (P[T[:, 1], 0] - P[T[:, 0], 0]) * (P[T[:, 2], 1] - P[T[:, 0], 1]) - (P[T[:, 1], 1] - P[T[:, 0], 1]) * (P[T[:, 2], 0] - P[T[:, 0], 0])
     a0 = area(V)
     e0 = np.hypot(*pup.E.T)
-    i0, i1 = int(math.ceil(L['in'] * F.fps - 1e-6)), min(int(math.ceil(L['out'] * F.fps - 1e-6)), F.frames)
+    i0, i1 = int(math.ceil(L['in'] * F.fps - 1e-6)), min(int(math.ceil(min(L['out'], F.duration) * F.fps - 1e-6)), F.frames)
     fold, stretch, prev, moved = [], [], None, {}
     for i in range(i0, min(i1, i0 + limit)):
         to = targets(L, i / F.fps)

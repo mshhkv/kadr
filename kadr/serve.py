@@ -6,7 +6,8 @@ its document (or anything it includes) changed on disk; pictures are kept by fil
 
 Tools: frame (a frame as a picture the model sees), sheet (a contact sheet), check (the defect report), info, render
 (the whole film in the background) and render_status."""
-import io, os, subprocess, sys, tempfile, threading, time
+import functools, io, os, subprocess, sys, tempfile, time
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 from PIL import Image as PILImage
@@ -27,8 +28,38 @@ mcp = MCPServer(
 )
 
 _films = {}                                    # path → (stamp, Film, renderer)
-_lock = threading.Lock()                       # one GPU renderer at a time
+_gpu = None                                    # the one thread every picture is made on (see on_gpu)
 _jobs = {}                                     # id → (Popen, log path, out path, started)
+
+
+def on_gpu(fn):
+    """A tool that draws runs on one thread of this server's own, one call at a time.
+
+    The core keeps a GPU device per thread, and what a renderer has put on the GPU (pictures, fonts, footage) belongs
+    to the device of the thread that made it. The MCP library runs each call on whichever of its worker threads is
+    free, so a renderer kept from an earlier call was sometimes asked for a frame from another thread: the core died
+    there («Cannot get non-existent resource»), its error is not an ordinary Python exception, the library sent no
+    answer, and the agent waited out the client's whole timeout (half an hour, 16.11.2026) on a sheet that takes three
+    seconds. Now: one thread for all of it, and whatever goes wrong inside comes back as words at once — after a
+    failure of the core itself the thread and everything kept on it are dropped, the next call starts clean."""
+    @functools.wraps(fn)
+    def run(*a, **kw):
+        global _gpu
+        if _gpu is None:
+            _gpu = ThreadPoolExecutor(1, thread_name_prefix='kadr-gpu')
+        try:
+            return _gpu.submit(fn, *a, **kw).result()
+        except Exception:
+            raise
+        except BaseException as e:                         # a panic of the Rust core (pyo3's PanicException), not Ctrl-C
+            if isinstance(e, (KeyboardInterrupt, SystemExit)):
+                raise
+            _films.clear()
+            _gpu.shutdown(wait=False)
+            _gpu = None
+            raise ToolError(f'ядро Kadr остановилось на этом вызове ({type(e).__name__}: {str(e)[:300]}). Сервер жив и начал с чистого листа: '
+                            f'повторите вызов; если повторится — тот же кадр из командной строки (kadr frame … --gpu) покажет, в фильме дело или в сервере')
+    return run
 
 
 def _stamp(path, film=None):
@@ -83,15 +114,15 @@ def _out(path, kinds=('.png', '.jpg', '.jpeg', '.webp')):
 
 
 @mcp.tool()
+@on_gpu
 def frame(film: str, at: str, width: int = 540, out: str = '') -> list:
     """One frame of the film at time `at`, as a picture (scaled to `width` px wide; 0 = full size). `out`: also save
     the full-size PNG there."""
-    with _lock:
-        f, r = _film(film)
-        t = f.time(at)
-        t0 = time.time()
-        img = PILImage.fromarray(r.frame_u8(t))
-        dt = time.time() - t0
+    f, r = _film(film)
+    t = f.time(at)
+    t0 = time.time()
+    img = PILImage.fromarray(r.frame_u8(t))
+    dt = time.time() - t0
     if out:
         img.save(_out(out))
     w = f.word_near(t)
@@ -99,44 +130,44 @@ def frame(film: str, at: str, width: int = 540, out: str = '') -> list:
 
 
 @mcp.tool()
+@on_gpu
 def sheet(film: str, every: float = 1.0, at: list[str] | None = None, start: str = '', end: str = '', width: int = 1400,
           out: str = '') -> list:
     """A contact sheet: frames every `every` s between start and end (default the whole film), or at the given times,
     four across, each captioned with its time and the word spoken then. `width`: the sheet's width as returned."""
     from .cli import sheet_image
-    with _lock:
-        f, r = _film(film)
-        if at:
-            times = [f.time(x) for x in at]
-        else:
-            a = f.time(start) if start else 0.0
-            b = f.time(end) if end else f.duration
-            times = list(np.arange(a, b, every))
-        if len(times) > 64:
-            raise ToolError(f'{len(times)} кадров — больше 64; возьмите шаг крупнее или отрезок короче')
-        t0 = time.time()
-        img = sheet_image(f, r, times)
-        dt = time.time() - t0
+    f, r = _film(film)
+    if at:
+        times = [f.time(x) for x in at]
+    else:
+        a = f.time(start) if start else 0.0
+        b = f.time(end) if end else f.duration
+        times = list(np.arange(a, b, every))
+    if len(times) > 64:
+        raise ToolError(f'{len(times)} кадров — больше 64; возьмите шаг крупнее или отрезок короче')
+    t0 = time.time()
+    img = sheet_image(f, r, times)
+    dt = time.time() - t0
     if out:
         img.save(_out(out))
     return [f'{len(times)} кадров за {dt:.1f} с' + (f' · {out}' if out else ''), _view(img, width)]
 
 
 @mcp.tool()
+@on_gpu
 def check(film: str, strict: bool = False) -> str:
     """The defect report of the document (kadr check): what will look wrong, by time and layer — no rendering."""
     from .check import run
-    with _lock:
-        f, _ = _film(film)
-        issues = run(f, strict=strict)
+    f, _ = _film(film)
+    issues = run(f, strict=strict)
     return '\n'.join(str(x) for x in issues) + (f'\n— {len(issues)} замечаний' if issues else '— замечаний нет')
 
 
 @mcp.tool()
+@on_gpu
 def info(film: str) -> str:
     """Size, frame rate, duration, layers and words of the film."""
-    with _lock:
-        f, _ = _film(film)
+    f, _ = _film(film)
     kinds = {}
     for L in f.layers:
         kinds[L['type']] = kinds.get(L['type'], 0) + 1
@@ -354,6 +385,7 @@ def puppet(picture: str, out: str, pins: list[str] | None = None, mesh: int = 0,
 
 
 @mcp.tool()
+@on_gpu
 def scene(scene: str, node: str = '', layer: str = '', at: str = '0', out: str = '', width: int = 1400, whole: bool = False) -> list:
     """A 3D scene from six sides in an even light (front, back, left, right, top, three quarters) and what cannot be
     right in it. `scene`: a scene's own file (.yaml in Kadr's words, or an exported .json) or a film with a scene3d
@@ -369,11 +401,10 @@ def scene(scene: str, node: str = '', layer: str = '', at: str = '0', out: str =
     with its poses (`kadr catalog figure`); look at it with node="bob"."""
     from . import scenecheck
     from .doc import DocError
-    with _lock:
-        try:
-            pic, words = scenecheck.look(os.path.expanduser(scene), layer or None, at, node or None, 480, True, whole)
-        except DocError as e:
-            raise ToolError(str(e))
+    try:
+        pic, words = scenecheck.look(os.path.expanduser(scene), layer or None, at, node or None, 480, True, whole)
+    except DocError as e:
+        raise ToolError(str(e))
     if out:
         pic.save(_out(out), quality=90)
     return ['\n'.join(words) + (f'\n{out}' if out else ''), _view(pic, width)]

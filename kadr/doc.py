@@ -377,6 +377,10 @@ class Film:
             self.duration = self.time(f['duration'], 'film.duration')
         else:
             self.duration = shots_end or (self.words[-1][2] + 0.5 if self.words else 5.0)
+        # a comp that names no duration has no end of its own: a layer in it without `out` lives as long as the comp
+        # layer shows it (it used to end at the guess above — 5 s without a voice-over — and the comp went empty there,
+        # silently; `time: =t` ran past it at once)
+        self._open_end = parent is not None and 'duration' not in f and not shots_end
         if shot_layers:
             from .shots import clamp
             shot_layers = clamp(shot_layers, self.duration)
@@ -674,7 +678,7 @@ class Film:
                 self.issue('error', f'у слоя {t} нет свойства «{k}»', lid, k, allowed)
         out = dict(id=lid, type=t, raw=L, parent=self)
         out['in'] = self.time(L['in'], lid) if 'in' in L else 0.0
-        out['out'] = self.time(L['out'], lid) if 'out' in L else self.duration
+        out['out'] = self.time(L['out'], lid) if 'out' in L else (math.inf if getattr(self, '_open_end', False) else self.duration)
         ec = L.get('echo')                                     # After Effects' Echo: the layer as it was a moment ago, under itself
         out['echo'] = None
         if ec is not None:
@@ -774,7 +778,7 @@ class Film:
             for k in got:
                 if k != 'type' and k not in d[1] and not (gpu and k in ('map', 'src', 'code')):
                     self.issue('error', f'effects[{n}] {name}: нет параметра «{k}»', lid, k, d[1])
-            e = {'def': d, 'p': {k: self.param(got.get(k, v), f'{lid}.effects.{name}.{k}') for k, v in d[1].items()}}
+            e = {'def': d, 'name': name, 'p': {k: self.param(got.get(k, v), f'{lid}.effects.{name}.{k}') for k, v in d[1].items()}}
             if gpu and isinstance(e['p'].get('file'), str):    # a table the effect reads (a LUT): a file of the film
                 if not e['p']['file'] or not os.path.exists(self.resolve(e['p']['file'])):
                     self.issue('error', f'effects[{n}] {name}: нет файла «{e["p"]["file"]}»', lid)
@@ -788,6 +792,14 @@ class Film:
                     self._maps.append((lid, e['map']))
             out['effects'].append(e)
         out['effects'] = out['effects'] or None
+        # `filter` is the layer's own picture, graded before any effect sees it: a green screen that saturation has
+        # turned grey is no longer green, and the key takes nothing out — the layer just comes out grey, no error
+        if out['effects'] and out['filter'] and any(e['name'] == 'chroma_key' for e in out['effects']):
+            off = [k for k, _ in out['filter'] if k in ('saturation', 'sepia')]
+            if off:
+                self.issue('warn', f'filter.{off[0]} действует раньше эффектов: к ключу (chroma_key) цвет экрана придёт уже изменённым, и ключ его не уберёт. '
+                                   f'Уберите {off[0]} из filter и сделайте то же после ключа — эффектом в effects за chroma_key '
+                                   f'(tint: {{black: "#000000", white: "#ffffff"}} — чёрно-белое)', lid)
         if custom:
             out['plugin'] = (custom[0], custom[2])
             out['size'] = self.prop(L.get('size', [200, 200]), f'{lid}.size', 2)
@@ -880,6 +892,17 @@ class Film:
                 if not out['paths']:
                     self.issue('error', 'paths: пустой список', lid)
             out['offset'] = self.prop(L['offset'], f'{lid}.offset') if 'offset' in L else None   # Offset Paths, px
+            # a shape's `position` is where its own (0, 0) goes — a rect's top left corner — while a picture, a text and
+            # a video are placed by their middle. `anchor: center` puts a rect / ellipse by its middle too
+            an = L.get('anchor', [0, 0])
+            if isinstance(an, str):
+                if an != 'center' or out['shape'] not in ('rect', 'ellipse') or out['size'].keys or out['size'].expr is not None:
+                    self.issue('error', f'anchor: «{an}» — у фигуры это [x, y] в её собственных пикселях или слово center '
+                                        f'(только rect и ellipse с постоянным size: точка опоры в середине, position ставит середину)', lid)
+                    an = [0, 0]
+                else:
+                    an = [out['size'].value[0] / 2, out['size'].value[1] / 2]
+            L = {**L, 'anchor': list(an)} if 'anchor' in L else L
             rp = L.get('repeat')
             out['repeat'] = None
             if rp is not None:                                 # Repeater
@@ -901,7 +924,7 @@ class Film:
                                                      dash_offset=self.prop(st.get('dash_offset', 0), f'{lid}.stroke.dash_offset'))   # marching ants
             out['trim'] = self.prop(L.get('trim', [0, 1]), f'{lid}.trim', 2)          # draw-on: [start, end] of the outline, 0..1
             out['arrow'] = L.get('arrow')                                              # 'end' | 'start' | 'both'
-            out['anchor'] = tuple(map(float, L.get('anchor', [0, 0])))                # pivot of scale/rotation, in shape px
+            out['anchor'] = tuple(map(float, an))                                       # the shape's point that sits at `position` (and the pivot of scale / rotation), shape px
             out['fill_rule'] = L.get('fill_rule', 'nonzero')                          # evenodd: overlaps cut holes (SVG)
             if out['fill_rule'] not in ('nonzero', 'evenodd'):
                 self.issue('error', 'fill_rule: nonzero или evenodd', lid)
@@ -925,6 +948,15 @@ class Film:
             out['angle'] = float(L.get('angle', 180))
             out['center'] = self.prop(L.get('center', [0.5, 0.5]), f'{lid}.center', 2)
             out['radius'] = tuple(map(float, L.get('radius', [0.5, 0.5])))
+            if out['kind'] == 'radial':                        # written in px, it is one flat colour — no error, nothing to see
+                vals = [out['center'].value] if not (out['center'].keys or out['center'].expr) else [k[1] for k in out['center'].keys or []]
+                far = [v for v in vals if isinstance(v, tuple) and any(abs(c) > 3 for c in v)]
+                if far or any(r_ > 3 for r_ in out['radius']):
+                    which = 'center' if far else 'radius'
+                    got = list(far[0]) if far else list(out['radius'])
+                    self.issue('warn', f'{which}: {got} — у градиента center и radius задаются долями рамки (0…1: center [0.5, 0.5] — середина, '
+                                       f'radius [0.5, 0.5] — до краёв), а не в пикселях; так выйдет ровная заливка одним цветом. '
+                                       f'Рамка — весь кадр или size слоя', lid)
             out['box'] = self.prop(L['size'], f'{lid}.size', 2) if 'size' in L else None   # a gradient in its own box (else the whole frame)
             out['premul'] = self.interp_mode(L, lid)
         elif t == 'particles':                                 # a picture breaking into grains (or gathered from them)
@@ -1115,6 +1147,7 @@ class Film:
                 if not re.fullmatch(r'[-+]?[a-z0-9]{4}', x):
                     self.issue('error', f'features: «{x}» — нужен четырёхбуквенный тег OpenType (tnum, lnum, smcp, liga…)', lid)
             out['features'] = ','.join(ft_)
+            self.glyphs(out['font'], out['text'] if t == 'text' else ' '.join(w_[3] for w_ in self.words), lid)
             out['size'] = float(L.get('size', 48 if t == 'text' else 44))
             out['color'] = color(L.get('color', '#ffffff'))
             out['align'] = L.get('align', 'center')
@@ -1131,6 +1164,22 @@ class Film:
                 from .captions import phrases
                 out['phrases'] = phrases(self.words, out['max_chars'], out['lines'], out['in'], out['out'])
         return self.stamp_in(out)
+
+    def glyphs(self, font, text, lid):
+        """a character none of the layer's fonts has is drawn as an empty box, and nothing said so (an arrow and a
+        rouble sign in a Cyrillic cut of a font, 16.11.2026): the report names them and the way out"""
+        from .render import missing_glyphs
+        try:
+            miss = missing_glyphs(font, text)
+        except (OSError, ValueError):                          # no such font: said where the font is read
+            return
+        if miss:
+            names = ', '.join(f'«{c}» (U+{ord(c):04X})' for c in miss[:8]) + (f' и ещё {len(miss) - 8}' if len(miss) > 8 else '')
+            first = font.split('|')[0].split('#')[0]
+            spare = 'Inter-Regular' if 'inter' not in first.lower() and not missing_glyphs('Inter-Regular', ''.join(miss)) else None
+            self.issue('warn', f'в шрифте {font.split("#")[0]} нет знаков {names} — на их месте будет пустой прямоугольник. Дайте запасной шрифт списком: '
+                               + (f'font: [{first}, {spare}] — в {spare} (идёт с Kadr) они есть' if spare else f'font: [{first}, <шрифт, где эти знаки есть>]')
+                               + ' (знак берётся из первого шрифта списка, где он есть) или замените знак', lid)
 
     def stamp_in(self, out):
         extra = [v for s_ in (out.get('shadow') or []) for v in s_.values()] + [v for _, v in (out.get('filter') or [])]
@@ -1395,6 +1444,7 @@ class Film:
             if 'weight' in S:
                 fonts = [f"{x.partition('#')[0]}#wght={float(S['weight']):g}" for x in fonts]
             o['font'] = '|'.join(fonts)
+            self.glyphs(o['font'], o['text'], lid)
             ft_ = S.get('features') or []
             ft_ = [f"{'' if on else '-'}{k}" for k, on in ft_.items()] if isinstance(ft_, dict) else [str(x) for x in (ft_ if isinstance(ft_, list) else [ft_])]
             o['features'] = ','.join(ft_)

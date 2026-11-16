@@ -6,7 +6,7 @@ mattes and motion-blur accumulators are GPU pictures; pictures without a turn ar
 ported); blur, shadows, filters and compositing run there. Layers not ported yet (text, shapes, turned pictures,
 footage, plugin drawings) are still drawn by the CPU code into numpy rasters and uploaded; effects from plugins get
 the picture back on the CPU. Each ported step is tested against the numpy code it replaces (core/tests)."""
-import ctypes
+import ctypes, threading
 import math
 import os
 import time
@@ -93,6 +93,17 @@ def _ft_ready():
 
 _REDRAW = object()              # _shape_pic: too large to keep as a picture — draw it the CPU engine's way
 
+_thread_mark = threading.local()
+
+
+def _here():
+    """this thread's own mark (a thread's number is given again to a later thread once it has ended — a mark is not)"""
+    m = getattr(_thread_mark, 'mark', None)
+    if m is None:
+        m = _thread_mark.mark = object()
+    return m
+
+
 class GpuRenderer(Renderer):
     def __init__(self, film, k=1, view=None):
         super().__init__(film, k, view)
@@ -100,9 +111,14 @@ class GpuRenderer(Renderer):
         self._sink = None
         self._ahead = {}                                       # (file, crop) → its decoding in the background
         self._comp_still = {}                                  # comp id → (layers on, its picture) while all stand still
+        self._thread = _here()                                 # what it puts on the GPU lives on this thread's device
 
     # ---------- frames ----------
     def frame_gpu(self, t):
+        if _here() is not self._thread:                        # said in words: the core itself dies here («non-existent resource»)
+            raise RuntimeError('этот рендерер создан в другом потоке: у каждого потока своё устройство видеокарты, и картинки рендерера '
+                               'лежат на устройстве того потока. Создавайте GpuRenderer в том же потоке, где просите кадры '
+                               '(или держите один поток для всей работы с GPU, как kadr serve)')
         layers = self.seen(t)
         n = 0                                                  # the bottom run of still layers is composited once
         while n < len(layers) and self.static(layers[n][0], t):
