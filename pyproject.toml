@@ -1,0 +1,24 @@
+[project]
+name = "kadr"
+version = "0.0.1"
+description = "Video engine for AI agents: a film document in, a shimmer-free video and a text defect report out"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = ["numpy", "pillow", "freetype-py", "pyyaml", "skia-python", "uharfbuzz"]
+
+[project.optional-dependencies]
+serve = ["mcp"]            # kadr serve: the MCP server an agent talks to
+
+[project.scripts]
+kadr = "kadr.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["kadr*"]
+
+[tool.setuptools.package-data]
+kadr = ["data/*.bin", "data/fonts/*", "shaders/*.wgsl", "shaders/gen/*.wgsl", "*.swift"]

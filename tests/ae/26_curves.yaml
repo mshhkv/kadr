@@ -1,0 +1,6 @@
+# AE 26: Curves — contrast S-curve, then a warm cast by the red and blue curves
+film: {size: [720, 400], fps: 25, duration: 1, background: "#202020"}
+layers:
+  - {id: plain, type: image, src: map.png, size: [320, 240], position: [185, 200]}
+  - {id: graded, type: image, src: map.png, size: [320, 240], position: [535, 200],
+     effects: [{type: curves, master: [0.16, 0.5, 0.84], r: [0.3, 0.58, 0.82], b: [0.2, 0.42, 0.68]}]}

@@ -1,0 +1,9 @@
+# AE 12: Path Text — a line of text running along a curve, and a ring of text turning on a circle
+film: {size: [720, 400], fps: 25, duration: 2, background: "#f3f0e8"}
+layers:
+  - {id: guide, type: shape, position: [30, 60], d: "M0 240 C120 -60 300 -60 400 240", stroke: {color: "#d6cfbd", width: 1.5}}
+  - {id: run, type: shape, text: "текст бежит по кривой линии", font: Arial, weight: 700, font_size: 30, position: [30, 60], fill: "#b0123a",
+     along: "M0 240 C120 -60 300 -60 400 240", along_offset: {0: -380, 2: 60}}
+  - {id: ring, type: shape, text: "KADR · MOTION · KADR · MOTION · ", font: Arial, weight: 900, font_size: 26, tracking: 2, position: [570, 200],
+     fill: "#111111", along: "M-90 0 A90 90 0 1 1 90 0 A90 90 0 1 1 -90 0 Z", along_offset: {0: 0, 2: 565.49, ease: linear}}
+  - {id: dot, type: shape, shape: ellipse, size: [70, 70], anchor: [35, 35], position: [570, 200], fill: "#e8423a"}

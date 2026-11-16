@@ -1,0 +1,7 @@
+# a picture blown away into grains by a wind front, and another gathered from grains, under motion blur
+film: {size: [540, 960], fps: 30, duration: 2, background: "#202020", motion_blur: {shutter: 180, max: 8, step: 2.5}}
+layers:
+  - {id: blow, type: particles, src: map.png, size: [400, 240], position: [270, 300], start: 0.2, sweep: 0.8, direction: 0,
+     wind: [700, -150], spread: 200, turbulence: 250, life: 1.0, cell: 4}
+  - {id: gather, type: particles, mode: gather, src: map.png, size: [400, 240], position: [270, 700], rotation: -5, start: 0.6, sweep: 0.8,
+     direction: 90, wind: [-500, 300], life: 0.9, cell: 3}

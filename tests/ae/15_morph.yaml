@@ -1,0 +1,12 @@
+# AE 15: one shape into another — the same vertices moved (a play button into pause bars… a square into a star), and
+# shapes built differently (a heart out of a circle)
+film: {size: [720, 400], fps: 25, duration: 2, background: "#f3f0e8"}
+layers:
+  - {id: star, type: shape, position: [60, 110], fill: "#1e5bd8",
+     points: {0: [[90, 0], [180, 0], [180, 90], [180, 180], [90, 180], [0, 180], [0, 90], [0, 0]],
+              2: [[90, 0], [118, 62], [180, 90], [118, 118], [90, 180], [62, 118], [0, 90], [62, 62]]}, closed: true}
+  - {id: heart, type: shape, position: [290, 110], fill: "#e8423a",
+     d: {0: "M90 0 C140 0 180 40 180 90 C180 140 140 180 90 180 C40 180 0 140 0 90 C0 40 40 0 90 0 Z",
+         2: "M90 50 C90 10 150 -10 170 40 C190 90 130 140 90 180 C50 140 -10 90 10 40 C30 -10 90 10 90 50 Z"}}
+  - {id: blob, type: shape, position: [500, 100], fill: "#2f9e62",
+     d: {0: "M100 0 L200 180 L0 180 Z", 1: "M0 0 H200 V200 H0 Z", 2: "M100 0 C155 0 200 45 200 100 C200 155 155 200 100 200 C45 200 0 155 0 100 C0 45 45 0 100 0 Z"}}

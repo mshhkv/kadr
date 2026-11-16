@@ -1,0 +1,85 @@
+# Block figures of the kit (kadr/figure.py): a few words each, no body written by hand. Centimetres.
+#   kadr scene examples/figures/scene.yaml -o out/figures.jpg          the six views and the check
+#   kadr render examples/figures/figures.yaml --gpu                    they move: poses, steps, a voice
+camera: {position: [0, 66, 420], look_at: [0, 30, 0], fov: 30, lens: .6}
+look: {exposure: .9, glow: .2, filmic: .82, vignette: .3}
+environment: {src: studio, intensity: .45}
+lights:
+  - {id: key, type: spot, position: [-140, 220, 200], target: [0, 30, 0], color: "#fff1dd", intensity: 60000, distance: 1200, angle: 38, penumbra: .8, shadow: {near: 60, far: 700}, soft: 14}
+  - {id: sky, type: sky, color: "#b9c4e0", ground: "#3a3027", intensity: .45}
+  - {id: rim, type: point, position: [150, 120, -140], color: "#9fbfff", intensity: 26000}
+nodes:
+  - {id: floor, shape: box, size: [900, 4, 900], position: [0, -2, 240], color: "#a89f92", roughness: .9}
+  - {id: backdrop, shape: box, size: [900, 300, 4], position: [0, 150, -200], color: "#c9d3e6", roughness: .95}
+  - {id: bench, shape: rbox, size: [70, 22, 34], radius: 3, position: [150, 11, -10], color: "#8a5a35", roughness: .7}
+
+  # a builder: tall, wide, a cap worn at once, a mug in the right hand
+  - id: bob
+    shape: figure
+    position: [-150, 0, 0]
+    rotation: [0, 18, 0]
+    height: 66
+    top: "#2f7d4f"
+    pocket: false
+    pants: "#3b3b45"
+    shoes: "#2a2523"
+    skin: "#c98f63"
+    hair: {color: "#1d1512", style: flat}
+    hat: {kind: cap, color: "#f2b92b"}
+    build: {wide: 1.15, arms: 1.05, legs: 1.15}
+    rest: {hat: 1, armRf: 1.1, smile: .5}
+    attach:
+      handR:
+        - id: bobMug
+          position: [0, -.5, .1]
+          rotation: [68, 0, 0]
+          children:
+            - {id: bobMugBody, shape: lathe, profile: [[0, 0], [.34, 0], [.36, .7], [.3, .7], [.29, .06], [0, .06]], color: "#f5f1ea", roughness: .35}
+            - {id: bobMugHandle, shape: torus, radius: .2, tube: .05, position: [.42, .36, 0], color: "#f5f1ea", roughness: .35}
+
+  # a girl in a T-shirt: long hair, glasses, a picture on the chest
+  - id: mia
+    shape: figure
+    position: [-50, 0, 10]
+    height: 54
+    top: "#f4c430"
+    pocket: false
+    sleeves: short
+    pants: "#5b3f8c"
+    shoes: "#ffffff"
+    skin: "#f0c8a4"
+    hair: {color: "#7a3b1d", style: long}
+    glasses: "#20202a"
+    eyes: "#27408b"
+    rest: {armR: .5, armRf: .3, smile: .7, hy: -.25}
+
+  # a child in a beanie: a big head, short legs
+  - id: tim
+    shape: figure
+    position: [45, 0, 20]
+    height: 38
+    top: "#3d6fd6"
+    stripes: "#ffffff"
+    pants: "#6b7280"
+    shoes: "#ee3124"
+    skin: "#e2a97f"
+    hair: {color: "#d9a441", style: tufts}
+    hat: {kind: beanie, color: "#e0563b"}
+    build: {head: 1.2, legs: .7, arms: .85}
+    rest: {hat: 1, up: .8, lid: 0, armLf: 1.9, armL: .3}
+
+  # an old man on the bench: bald, white brows — he sits where the bench's top is
+  - id: sam
+    shape: figure
+    position: [150, 22, -6]
+    rotation: [0, -22, 0]
+    height: 58
+    sits: true
+    top: "#8c8f99"
+    pants: "#4a3b2c"
+    shoes: "#1f1b18"
+    skin: "#d9a784"
+    hair: none
+    brows: "#e8e8e8"
+    glasses: "#6b5a3a"
+    rest: {armLf: .9, armRf: .9, lean: .16, hp: .12, smile: .1, worry: .3}

@@ -1,0 +1,439 @@
+# AE 22: every blend mode — the same gradient over the same picture
+film:
+  size: [720, 400]
+  fps: 25
+  duration: 1
+  background: '#16181c'
+layers:
+- id: b0
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [62, 60]
+  filter: {brightness: 1.6}
+- id: o0
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [62, 60]
+  blend: normal
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t0
+  type: text
+  text: normal
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [62, 110]
+- id: b1
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [181, 60]
+  filter: {brightness: 1.6}
+- id: o1
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [181, 60]
+  blend: multiply
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t1
+  type: text
+  text: multiply
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [181, 110]
+- id: b2
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [300, 60]
+  filter: {brightness: 1.6}
+- id: o2
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [300, 60]
+  blend: screen
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t2
+  type: text
+  text: screen
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [300, 110]
+- id: b3
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [419, 60]
+  filter: {brightness: 1.6}
+- id: o3
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [419, 60]
+  blend: overlay
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t3
+  type: text
+  text: overlay
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [419, 110]
+- id: b4
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [538, 60]
+  filter: {brightness: 1.6}
+- id: o4
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [538, 60]
+  blend: soft-light
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t4
+  type: text
+  text: soft-light
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [538, 110]
+- id: b5
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [657, 60]
+  filter: {brightness: 1.6}
+- id: o5
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [657, 60]
+  blend: hard-light
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t5
+  type: text
+  text: hard-light
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [657, 110]
+- id: b6
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [62, 176]
+  filter: {brightness: 1.6}
+- id: o6
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [62, 176]
+  blend: add
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t6
+  type: text
+  text: add
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [62, 226]
+- id: b7
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [181, 176]
+  filter: {brightness: 1.6}
+- id: o7
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [181, 176]
+  blend: subtract
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t7
+  type: text
+  text: subtract
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [181, 226]
+- id: b8
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [300, 176]
+  filter: {brightness: 1.6}
+- id: o8
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [300, 176]
+  blend: darken
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t8
+  type: text
+  text: darken
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [300, 226]
+- id: b9
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [419, 176]
+  filter: {brightness: 1.6}
+- id: o9
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [419, 176]
+  blend: lighten
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t9
+  type: text
+  text: lighten
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [419, 226]
+- id: b10
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [538, 176]
+  filter: {brightness: 1.6}
+- id: o10
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [538, 176]
+  blend: color-dodge
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t10
+  type: text
+  text: color-dodge
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [538, 226]
+- id: b11
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [657, 176]
+  filter: {brightness: 1.6}
+- id: o11
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [657, 176]
+  blend: color-burn
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t11
+  type: text
+  text: color-burn
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [657, 226]
+- id: b12
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [62, 292]
+  filter: {brightness: 1.6}
+- id: o12
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [62, 292]
+  blend: difference
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t12
+  type: text
+  text: difference
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [62, 342]
+- id: b13
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [181, 292]
+  filter: {brightness: 1.6}
+- id: o13
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [181, 292]
+  blend: exclusion
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t13
+  type: text
+  text: exclusion
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [181, 342]
+- id: b14
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [300, 292]
+  filter: {brightness: 1.6}
+- id: o14
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [300, 292]
+  blend: hue
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t14
+  type: text
+  text: hue
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [300, 342]
+- id: b15
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [419, 292]
+  filter: {brightness: 1.6}
+- id: o15
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [419, 292]
+  blend: saturation
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t15
+  type: text
+  text: saturation
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [419, 342]
+- id: b16
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [538, 292]
+  filter: {brightness: 1.6}
+- id: o16
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [538, 292]
+  blend: color
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t16
+  type: text
+  text: color
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [538, 342]
+- id: b17
+  type: image
+  src: map.png
+  size: [110, 80]
+  position: [657, 292]
+  filter: {brightness: 1.6}
+- id: o17
+  type: gradient
+  kind: linear
+  angle: 90
+  size: [110, 80]
+  position: [657, 292]
+  blend: luminosity
+  stops:
+  - [0, '#ff5a1f', 1]
+  - [0.5, '#ffe14a', 1]
+  - [1, '#2a7bff', 1]
+- id: t17
+  type: text
+  text: luminosity
+  font: Arial
+  size: 13
+  color: '#d8d8d8'
+  position: [657, 342]

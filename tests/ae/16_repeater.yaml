@@ -1,0 +1,9 @@
+# AE 16: Repeater — rays that grow around a centre, a row of steps, a spiral that scales away
+film: {size: [720, 400], fps: 25, duration: 2, background: "#101418"}
+layers:
+  - {id: rays, type: shape, shape: rect, size: [70, 10], radius: 5, position: [150, 200], anchor: [-30, 5], fill: "#ffd60a",
+     repeat: {count: {0: 1, 1.6: 16}, rotation: 22.5, anchor: [-30, 5]}}
+  - {id: steps, type: shape, shape: rect, size: [34, 34], radius: 6, position: [300, 150], fill: "#35e0c8",
+     repeat: {count: 6, offset: {0: [0, 0], 1.5: [38, 14]}, opacity: [1, 0.25]}}
+  - {id: spiral, type: shape, shape: ellipse, size: [46, 46], position: [600, 200], anchor: [-60, 23], fill: "#ff5a7a",
+     repeat: {count: 18, rotation: {0: 0, 2: 40}, scale: 0.9, anchor: [-60, 23], opacity: [1, 0.3]}}

@@ -1,0 +1,6 @@
+film: {size: [960, 540], fps: 30, duration: 1, background: "#d0d0d0", motion_blur: {shutter: 180, max: 32, step: 2.5}}
+layers:
+  - {id: still, type: text, text: "неподвижно", font: Arial, size: 40, position: [480, 60], color: "#333333"}
+  - {id: fly, type: image, src: map.png, size: [300, 180], position: {0: [-200, 300], 0.6: [600, 300], ease: outExpo}}
+  - {id: wheel, type: shape, shape: polygon, points: [[0, -80], [20, 0], [0, 80], [-20, 0]], fill: "#60041b", position: [800, 140], rotation: "=t*900"}
+  - {id: word, type: text, text: "ВЪЕЗД", font: Arial, size: 90, position: {0.2: [1400, 470], 0.65: [480, 470], ease: outExpo}, color: "#ffffff", shadow: true}

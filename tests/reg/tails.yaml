@@ -1,0 +1,8 @@
+film: {size: [960, 540], fps: 25, duration: 2, background: "#d8d8d8"}
+layers:
+  - {id: card, type: solid, color: "#ffffff", size: [200, 120], position: [180, 270], rotation: {0: 0, 2: 180}, shadow: {space: layer, offset: [20, 20], blur: 10, opacity: 0.6}}
+  - {id: card2, type: solid, color: "#ffffff", size: [200, 120], position: [180, 120], rotation: {0: 0, 2: 180}, shadow: {offset: [20, 20], blur: 10, opacity: 0.6}}
+  - {id: spin, type: solid, color: "#60041b", size: [160, 60], anchor: {0: [0, 30], 2: [160, 30]}, position: [480, 270], rotation: {0: 0, 2: 360}}
+  - {id: dot, type: shape, shape: ellipse, size: [10, 10], anchor: [5, 5], position: [480, 270], fill: "#000000"}
+  - {id: book, type: solid, color: "#2266aa", size: [200, 280], anchor: [0, 140], position: [700, 270], rotation_y: {0: 0, 2: -150}, perspective: 900, perspective_origin: [200, 140]}
+  - {id: ring, type: shape, shape: path, d: "M0 0 H160 V160 H0 Z M40 40 H120 V120 H40 Z", fill: "#ffaa00", fill_rule: evenodd, position: [80, 380]}

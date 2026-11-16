@@ -1,0 +1,8 @@
+# an endless tiled floor running to the horizon (tile + the mip sampler) moving under motion blur; a corner-pinned
+# picture whose corners move
+film: {size: [540, 960], fps: 30, duration: 1, background: "#202830", motion_blur: {shutter: 180, max: 8, step: 2.5}}
+layers:
+  - {id: floor, type: image, src: sand_small.png, tile: mirror, tile_scale: 1.5, tile_offset: [13, 7], size: [24000, 24000],
+     position: {0: [270, 640], 1: [300, 700]}, rotation_x: 76, perspective: 700, perspective_origin: [12000, 12000]}
+  - {id: pin, type: image, src: map.png, size: [300, 400],
+     corner_pin: {0: [[120, 120], [430, 160], [100, 520], [440, 470]], 1: [[150, 100], [420, 190], [90, 560], [460, 500]]}}

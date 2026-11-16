@@ -1,0 +1,6 @@
+film: {size: [540, 540], fps: 25, duration: 2, background: "#202020"}
+layers:
+  - {id: bar, type: shape, shape: rect, size: [300, 80], position: [270, 200], anchor: [150, 40], fill: "#e8423a",
+     radius: {0: 0, 1.5: 40}}
+  - {id: card, type: shape, shape: rect, size: [200, 120], position: [270, 380], anchor: [100, 60], fill: "#ffffff",
+     radius: "=10 + 50 * abs(sin(t * 2))", stroke: {color: "#3a7be8", width: 6}}

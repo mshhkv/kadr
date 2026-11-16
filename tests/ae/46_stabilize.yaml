@@ -1,0 +1,10 @@
+# AE 46: stabilisation — the same hand-held shot as it was filmed, with the shake taken out (a calm move stays), and
+# held still as if on a tripod. The camera's path was found by:  kadr stabilize shot.mp4
+film: {size: [960, 250], fps: 25, duration: 4, background: "#111111"}
+layers:
+  - {id: raw, type: video, src: shot.mp4, size: native, scale: 0.48, position: [162, 108]}
+  - {id: calm, type: video, src: shot.mp4, size: native, scale: 0.48, position: [480, 108], stabilize: true}
+  - {id: still, type: video, src: shot.mp4, size: native, scale: 0.48, position: [798, 108], stabilize: {lock: true}}
+  - {id: t1, type: text, text: "как снято", font: Arial, size: 20, color: "#ffffff", position: [162, 222]}
+  - {id: t2, type: text, text: "stabilize: true", font: Arial, size: 20, color: "#ffd60a", position: [480, 222]}
+  - {id: t3, type: text, text: "lock: true — штатив", font: Arial, size: 20, color: "#ffd60a", position: [798, 222]}

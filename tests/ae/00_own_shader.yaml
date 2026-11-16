@@ -1,0 +1,7 @@
+# a film's own shaders: a file next to it (fx/stripes.wgsl) and code written in the document
+film: {size: [720, 400], fps: 25, duration: 2, background: "#101418"}
+layers:
+  - {id: pic, type: image, src: map.png, size: [300, 220], position: [190, 200],
+     effects: [{type: shader, src: fx/stripes.wgsl, width: 14, speed: 40, tint: "#ffd60a"}]}
+  - {id: word, type: text, text: "SHADER", font: Arial, weight: 900, size: 90, color: "#ffffff", position: [530, 200],
+     effects: [{type: shader, sway: {0: 0, 2: 18}, code: "fn effect(xy: vec2<f32>, p: FxP) -> vec4<f32> { return src_at(xy + vec2<f32>(sin(xy.y * 0.12 + fx_time() * 6.0) * p.sway * fx_scale(), 0.0)); }"}]}

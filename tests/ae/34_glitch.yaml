@@ -1,0 +1,6 @@
+# AE 34: Glitch / Bad TV — bands jump, channels split, lines dim
+film: {size: [720, 400], fps: 25, duration: 2, background: "#050505"}
+layers:
+  - {id: t, type: text, text: "NO SIGNAL", font: Arial, weight: 900, size: 96, color: "#e8e8e8", position: [360, 130],
+     effects: [{type: glitch, amount: 0.35, block: 22, shift: 50, split: 6, rate: 10}]}
+  - {id: pic, type: image, src: map.png, size: [320, 180], position: [360, 290], effects: [{type: glitch, amount: 0.2, block: 14, shift: 30, split: 4, lines: 0.3, seed: 3}]}

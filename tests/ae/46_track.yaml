@@ -1,0 +1,27 @@
+# AE 46: tracking — a picture pinned on the screen of a hand-held shot (planar track + corner pin: a screen replaced),
+# and a caption that follows a thing in it. The shot is tests/ae/shot.mp4 (make_shot.yaml); its tracks were made by
+#   kadr track shot.mp4 --name screen --at 0 --region "157,61 367,70 367,194 157,195" --surface "173,78 352,85 352,179 173,179"
+#   kadr track shot.mp4 --name tower --at 0 --region "497,125,603,325"
+film:
+  size: [640, 360]
+  fps: 25
+  duration: 4
+  background: "#000000"
+  audio:
+    - {id: beat, src: beat.wav, role: music}
+layers:
+  - {id: shot, type: video, src: shot.mp4, position: [320, 180]}
+  - id: insert
+    type: comp
+    size: [360, 190]
+    background: "#0d1326"
+    corner_pin: "=track('shot', 'screen').corners"
+    opacity: "=1 - track('shot', 'screen').lost"
+    layers:
+      - {id: bars, type: spectrum, audio: beat, size: [320, 110], position: [180, 120], bands: 28, range: [50, 9000],
+         color: {gradient: linear, from: [0, 110], to: [0, 0], stops: [[0, "#ee3124"], [1, "#ffd60a"]]}}
+      - {id: name, type: text, text: "KADR", font: Arial, weight: 900, size: 40, color: "#ffffff", position: [180, 36]}
+  - {id: stem, type: solid, color: "#ffffff", size: [30, 2], opacity: 0.8,
+     position: "=[track('shot', 'tower').x - 62 * track('shot', 'tower').scale, track('shot', 'tower').y - 78 * track('shot', 'tower').scale]"}
+  - {id: tag, type: text, text: "башня", font: Arial, weight: 700, size: 20, color: "#ffffff",
+     position: "=[track('shot', 'tower').x - 112 * track('shot', 'tower').scale, track('shot', 'tower').y - 78 * track('shot', 'tower').scale]"}

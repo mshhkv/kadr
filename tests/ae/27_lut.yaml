@@ -1,0 +1,6 @@
+# AE 27: a colour table from a .cube file — the same picture before, at half strength, and in full
+film: {size: [720, 400], fps: 25, duration: 1, background: "#1b1b1b"}
+layers:
+  - {id: a, type: image, src: map.png, size: [220, 170], position: [125, 200], filter: {brightness: 1.5}}
+  - {id: b, type: image, src: map.png, size: [220, 170], position: [360, 200], filter: {brightness: 1.5}, effects: [{type: lut, file: luts/teal_orange.cube, amount: 0.5}]}
+  - {id: c, type: image, src: map.png, size: [220, 170], position: [595, 200], filter: {brightness: 1.5}, effects: [{type: lut, file: luts/teal_orange.cube}]}

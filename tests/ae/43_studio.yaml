@@ -1,0 +1,25 @@
+# AE 43: bodies in the built-in studio — metal, lacquer and matte lit and mirrored by softboxes all around
+# (`environment: studio`), a picture on a body (`map`), the camera going round
+film: {size: [720, 400], fps: 25, duration: 4, background: "#0c0d10"}
+layers:
+  - id: stage
+    type: scene3d
+    samples: 12
+    scene:
+      environment: {src: studio, intensity: 1.1}
+      camera:
+        position: "=[175 * sin(0.3 * t - 0.6), 56, 175 * cos(0.3 * t - 0.6)]"
+        look_at: [0, 15, -8]
+        fov: 30
+        lens: 1.1
+        focus: 178
+      lights:
+        - {type: spot, position: [-90, 160, 90], target: [0, 10, 0], color: "#fff0dc", intensity: 30000, angle: 32, penumbra: .9, shadow: true, soft: 10}
+      look: {exposure: 1.0, glow: .22, filmic: .82, vignette: .35}
+      nodes:
+        - {id: floor, shape: cylinder, radius: 120, height: 3, position: [0, -1.5, 0], color: "#1b1d22", roughness: .35}
+        - {id: chrome, shape: sphere, radius: 15, position: [-36, 15, 16], color: "#f2f2f2", metal: 1, roughness: .06}
+        - {id: gold, shape: sphere, radius: 15, position: [0, 15, 24], color: "#e2b04a", metal: 1, roughness: .28}
+        - {id: lacquer, shape: sphere, radius: 15, position: [36, 15, 16], color: "#c8102e", roughness: .5, clearcoat: 1, clearcoat_roughness: .04}
+        - {id: matte, shape: rbox, size: [26, 26, 26], radius: 4, position: [-34, 13, -36], rotation: [0, 28, 0], color: "#2f7fd0", roughness: .75}
+        - {id: card, shape: box, size: [50, 34, 1.2], position: [26, 17.2, -38], rotation: [-6, -16, 0], map: card.png, roughness: .4}

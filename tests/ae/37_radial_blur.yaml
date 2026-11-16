@@ -1,0 +1,7 @@
+# AE 37 / 50: zoom blur that lands (a zoom transition), and a spin blur
+film: {size: [720, 400], fps: 25, duration: 2, background: "#0d1016"}
+layers:
+  - {id: zoom, type: image, src: map.png, size: [300, 220], position: [190, 200],
+     effects: [{type: radial_blur, zoom: {0: 0.9, 1.2: 0}, reach: 60}]}
+  - {id: spin, type: text, text: "SPIN", font: Arial, weight: 900, size: 100, color: "#ffd60a", position: [540, 200],
+     effects: [{type: radial_blur, zoom: 0, spin: {0: 40, 2: 0}, reach: 40}]}

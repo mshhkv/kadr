@@ -1,0 +1,14 @@
+# AE 7: links between layers (pick-whip) and film controls — followers that lag behind a leader, gears turned by one
+# variable, a label that reads another layer's value
+film: {size: [720, 400], fps: 25, duration: 2, background: "#101418", vars: {spin: {0: 0, 2: 360, ease: linear}, gap: 74}}
+layers:
+  - {id: lead, type: shape, shape: ellipse, size: [54, 54], anchor: [27, 27], fill: "#ffd60a", position: {0: [70, 90], 1: [330, 300], 2: [400, 80]}}
+  - {id: f1, type: shape, shape: ellipse, size: [40, 40], anchor: [20, 20], fill: "#ff9f0a", position: "=layer('lead').at(t - 0.10).position"}
+  - {id: f2, type: shape, shape: ellipse, size: [28, 28], anchor: [14, 14], fill: "#ff5a1f", position: "=layer('lead').at(t - 0.20).position"}
+  - {id: f3, type: shape, shape: ellipse, size: [18, 18], anchor: [9, 9], fill: "#c8321a", position: "=layer('lead').at(t - 0.30).position"}
+  - {id: gear1, type: shape, shape: rect, size: [90, 90], radius: 14, anchor: [45, 45], position: [560, 130], fill: "#35e0c8", rotation: "=var('spin')"}
+  - {id: gear2, type: shape, shape: rect, size: [56, 56], radius: 9, anchor: [28, 28], fill: "#1e9bd8",
+     position: "=[layer('gear1').x + var('gap'), layer('gear1').y + 46]", rotation: "=-layer('gear1').rotation * 1.6"}
+  - {id: gear3, type: shape, shape: rect, size: [36, 36], radius: 6, anchor: [18, 18], fill: "#7a5cff",
+     position: "=[layer('gear2').x - 60, layer('gear2').y + 44]", rotation: "=layer('gear2').rotation * -1.55"}
+  - {id: label, type: text, text: "='ведущий: x = ' + str(int(layer('lead').x))", font: Arial, size: 24, color: "#ffffff", position: [560, 350]}

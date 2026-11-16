@@ -1,0 +1,4 @@
+film: {size: [720, 480], fps: 25, duration: 1, background: "#efece4"}
+layers:
+  - {id: card, type: image, src: map.png, size: [260, 300], position: [360, 240], rotation_y: 58, perspective: 600,
+     shadow: {blur: 8, offset: [60, 40], opacity: 0.7, space: layer}}

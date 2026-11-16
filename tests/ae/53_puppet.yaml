@@ -1,0 +1,24 @@
+# beyond the fifty: one still picture brought to life by pins (After Effects: the Puppet tool) — tests/ae/man.png
+# waves a hand, nods and sways while its feet stay on the floor; the same picture beside it, untouched
+film: {size: [900, 600], fps: 25, duration: 4, background: "#1b1e26"}
+layers:
+  - {id: floor, type: solid, size: [900, 6], position: [450, 566], color: "#3a4050"}
+  - {id: still, type: image, src: man.png, position: [220, 300], opacity: 0.35}
+  - id: man
+    type: puppet
+    src: man.png
+    position: [620, 300]
+    pins:
+      # the hand goes round the shoulder pin at the distance it has from it in the picture (159 px): the arm turns.
+      # Brought closer than that, the arm would have nowhere to go and buckle to one side, then the other — kadr check says so
+      hand:  {at: [356, 290], to: "=[250 + 7 * sin(2.5 * t) + 158.6 * cos(radians(-52 + 20 * sin(6 * t))), 172 + 158.6 * sin(radians(-52 + 20 * sin(6 * t)))]"}
+      shoulder: {at: [250, 172], move: "=[7 * sin(2.5 * t), 0]"}
+      head:  {at: [210, 86], move: "=[16 * sin(2.5 * t), 3 * cos(5 * t)]"}
+      chest: {at: [210, 200], move: "=[7 * sin(2.5 * t), 0]"}
+      other: {at: [64, 290], move: "=[4 * sin(2.5 * t), 5 * sin(5 * t)]"}
+      # what must not follow the arm is held by pins of its own: the other shoulder and the hips sway with the body
+      far:   {at: [170, 172], move: "=[7 * sin(2.5 * t), 0]"}
+      hip_l: {at: [175, 330], move: "=[3 * sin(2.5 * t), 0]"}
+      hip_r: {at: [245, 330], move: "=[3 * sin(2.5 * t), 0]"}
+      left:  {at: [140, 522]}
+      right: {at: [280, 522]}

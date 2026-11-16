@@ -1,0 +1,9 @@
+# AE 21: an animated mask path — a picture opened by a growing blob, a title wiped in by a slanted edge
+film: {size: [720, 400], fps: 25, duration: 2, background: "#0e1116"}
+layers:
+  - {id: pic, type: image, src: map.png, size: [330, 250], position: [190, 200], filter: {brightness: 1.6},
+     mask: {feather: 10, position: [190, 200],
+            d: {0: "M0 -6 C4 -6 6 -3 6 0 C6 3 4 6 0 6 C-4 6 -6 3 -6 0 C-6 -3 -4 -6 0 -6 Z",
+                2: "M0 -260 C150 -260 240 -120 240 0 C240 130 140 260 0 260 C-140 260 -240 130 -240 0 C-240 -120 -150 -260 0 -260 Z"}}}
+  - {id: title, type: text, text: "REVEAL", font: Arial, weight: 900, size: 84, color: "#ffffff", position: [540, 200],
+     mask: {feather: 14, d: {0.2: "M360 100 L360 100 L330 300 L330 300 Z", 1.6: "M360 100 L760 100 L730 300 L330 300 Z"}}}

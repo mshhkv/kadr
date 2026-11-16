@@ -1,0 +1,12 @@
+# AE 25: Echo (trails of what the layer was a moment ago) and Posterize Time (a layer that moves in steps)
+film: {size: [720, 400], fps: 25, duration: 2, background: "#0c0f14"}
+layers:
+  - {id: comet, type: shape, shape: ellipse, size: [40, 40], anchor: [20, 20], fill: "#ffd60a",
+     position: "=[120 + 80 * cos(t * 3.5), 110 + 60 * sin(t * 3.5)]", echo: {count: 10, step: 0.03, decay: 0.78}}
+  - {id: word, type: text, text: "ECHO", font: Arial, weight: 900, size: 80, color: "#35e0c8", position: {0: [330, 110], 1: [560, 110], 2: [400, 110]},
+     rotation: {0: -20, 2: 20}, echo: {count: 6, step: 0.05, decay: 0.6}}
+  - {id: smooth, type: shape, shape: rect, size: [60, 60], radius: 10, anchor: [30, 30], fill: "#ff5a7a", position: {0: [80, 250], 2: [640, 250], ease: linear}, rotation: {0: 0, 2: 180}}
+  - {id: s1, type: text, text: "плавно", font: Arial, size: 18, color: "#9aa4b2", position: [60, 300]}
+  - {id: stepped, type: shape, shape: rect, size: [60, 60], radius: 10, anchor: [30, 30], fill: "#7a5cff", position: {0: [80, 340], 2: [640, 340], ease: linear}, rotation: {0: 0, 2: 180},
+     posterize: 6}
+  - {id: s2, type: text, text: "6 шагов в секунду", font: Arial, size: 18, color: "#9aa4b2", position: [100, 385]}

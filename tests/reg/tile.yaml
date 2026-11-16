@@ -1,0 +1,5 @@
+film: {size: [540, 960], fps: 30, duration: 1, background: "#000000"}
+layers:
+  - {id: g, type: group, anchor: [270, 480], scale: {0: 1, 1: 0.5}, effects: [{type: motion_tile, tile: {0: [540, 960], 1: [270, 480]}, center: [270, 480]}]}
+  - {id: im, type: image, parent: g, src: map.png, size: [540, 960], position: [270, 480]}
+  - {id: tx, type: text, parent: g, text: "ХУК", font: Arial, size: 120, position: [200, 300], color: "#ffcc00"}

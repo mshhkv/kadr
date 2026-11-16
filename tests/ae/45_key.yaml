@@ -1,0 +1,11 @@
+# AE 45: a green-screen «shot» (a group: green wall, a figure, a greenish rim) keyed out over a picture; light wrap on the right
+film: {size: [720, 400], fps: 25, duration: 1, background: "#000000"}
+layers:
+  - {id: back, type: image, src: map.png, size: [720, 400], position: [360, 200], filter: {brightness: 2.2}}
+  - {id: shot, type: group, isolate: true, effects: [{type: chroma_key, key: "#00d000"}]}
+  - {id: wall, type: solid, parent: shot, color: "#00d000", size: [300, 300], position: [190, 200]}
+  - {id: rim, type: shape, parent: shot, shape: ellipse, size: [156, 216], anchor: [78, 108], position: [190, 200], fill: "#7fc27f"}
+  - {id: man, type: shape, parent: shot, shape: ellipse, size: [140, 200], anchor: [70, 100], position: [190, 200], fill: "#2b2b33"}
+  - {id: shot2, type: group, isolate: true, effects: [{type: chroma_key, key: "#00d000"}, {type: light_wrap, map: back, radius: 14, strength: 1}]}
+  - {id: wall2, type: solid, parent: shot2, color: "#00d000", size: [300, 300], position: [530, 200]}
+  - {id: man2, type: shape, parent: shot2, shape: ellipse, size: [140, 200], anchor: [70, 100], position: [530, 200], fill: "#2b2b33"}

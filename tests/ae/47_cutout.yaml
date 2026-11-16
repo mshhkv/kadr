@@ -1,0 +1,10 @@
+# AE 47: a thing cut out of footage — a word stands behind it (the clip, the word, the clip again with only the thing
+# left), and the thing alone on another ground. The clip is tests/ae/subject.mp4 (make_subject.yaml); its matte was
+# made by:  kadr matte subject.mp4 --what subject      (for people: kadr matte clip.mp4)
+film: {size: [960, 270], fps: 25, duration: 3, background: "#101216"}
+layers:
+  - {id: shot, type: video, src: subject.mp4, size: native, scale: 0.75, position: [240, 135]}
+  - {id: word, type: text, text: "KADR", font: Arial, weight: 900, size: 130, color: "#ffffff", position: [240, 150], opacity: 0.92}
+  - {id: front, type: video, src: subject.mp4, size: native, scale: 0.75, position: [240, 135], cutout: true}
+  - {id: ground, type: gradient, kind: linear, angle: 120, stops: [[0, "#ff9f0a"], [1, "#ee3124"]], size: [480, 270], position: [720, 135]}
+  - {id: alone, type: video, src: subject.mp4, size: native, scale: 0.75, position: [720, 135], cutout: {feather: 2}}

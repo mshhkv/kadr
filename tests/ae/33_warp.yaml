@@ -1,0 +1,8 @@
+# AE 33: Wave Warp, ripples from a point, a bulge lens
+film: {size: [720, 400], fps: 25, duration: 2, background: "#101820"}
+layers:
+  - {id: flag, type: image, src: map.png, size: [200, 140], position: [130, 200], effects: [{type: wave, amplitude: 10, wavelength: 90, speed: 1}]}
+  - {id: pond, type: image, src: map.png, size: [200, 140], position: [360, 200],
+     effects: [{type: ripple, amplitude: 6, wavelength: 34, speed: 1.5, radius: 140}]}
+  - {id: lens, type: image, src: map.png, size: [200, 140], position: [590, 200], rotation: 12,
+     effects: [{type: bulge, radius: 90, strength: {0: -0.6, 2: 0.7}}]}

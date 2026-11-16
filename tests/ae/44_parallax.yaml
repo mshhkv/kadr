@@ -1,0 +1,5 @@
+# AE 44: depth from a flat picture — a depth map (white is near) and a drifting shift
+film: {size: [720, 400], fps: 25, duration: 2, background: "#000000"}
+layers:
+  - {id: depth, type: gradient, visible: false, kind: radial, size: [760, 440], position: [360, 200], stops: [[0, "#ffffff", 1], [0.45, "#808080", 1], [1, "#000000", 1]]}
+  - {id: pic, type: image, src: map.png, size: [760, 440], position: [360, 200], effects: [{type: parallax, map: depth, shift: {0: [-70, -20], 2: [70, 20]}, focus: 0.5}]}

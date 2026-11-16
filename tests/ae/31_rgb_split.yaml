@@ -1,0 +1,6 @@
+# AE 31: chromatic aberration — a flat split that swings, and a lens-like one growing from the centre
+film: {size: [720, 400], fps: 25, duration: 2, background: "#0b0b0d"}
+layers:
+  - {id: t, type: text, text: "SPLIT", font: Arial, weight: 900, size: 120, color: "#ffffff", position: [360, 120],
+     effects: [{type: rgb_split, amount: {0: 0, 1: 14, 2: 0}, angle: 20}]}
+  - {id: pic, type: image, src: map.png, size: [360, 200], position: [360, 290], effects: [{type: rgb_split, amount: 8, radial: 1}]}

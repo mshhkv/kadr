@@ -1,0 +1,46 @@
+# beyond the fifty: charts from numbers — bars that rise in turn with numbers counting up, a line drawn from a table
+# (tests/ae/sales.csv) with a dot riding its end, lying bars with one standing out, a donut that sweeps round
+film: {size: [1280, 720], fps: 25, duration: 5, background: "#12151c"}
+layers:
+  - id: bars
+    type: chart
+    size: [600, 330]
+    position: [330, 185]
+    kind: bar
+    data: [[2019, 12], [2020, 18.5], [2021, 31], [2022, 27], [2023, 38.6]]
+    progress: {0.2: 0, 2.2: 1, ease: out}
+    color: {gradient: linear, stops: [[0, "#6fc3ff"], [1, "#2d6cdf"]]}
+    values: {format: "{:.1f} %", decimal: ","}
+    font: Inter-Bold
+  - id: lines
+    type: chart
+    size: [600, 330]
+    position: [950, 185]
+    kind: area
+    src: sales.csv
+    progress: {0.6: 0, 3.4: 1, ease: inOut}
+    smooth: true
+    head: true
+    dots: 5
+    values: {format: "{:.1f}", decimal: ","}
+    font: Inter-Bold
+  - id: lying
+    type: chart
+    size: [600, 320]
+    position: [330, 540]
+    kind: hbar
+    data: [[Норвегия, 1480], [Чили, 1060], [Шотландия, 205], [Канада, 148], [Фареры, 96]]
+    colors: ["#ff6b5e", "#5b6577", "#5b6577", "#5b6577", "#5b6577"]
+    progress: {1.2: 0, 3.4: 1, ease: out}
+    values: {format: "{:,.0f} тыс. т"}
+    axis: false
+    font: Inter-Bold
+  - id: ring
+    type: chart
+    size: [600, 320]
+    position: [950, 540]
+    kind: donut
+    data: [[Корм, 52], [Мальки, 17], [Труд, 14], [Прочее, 17]]
+    progress: {1.8: 0, 4.2: 1, ease: inOut}
+    values: {format: "{:.0f} %", size: 24}
+    font: Inter-Bold

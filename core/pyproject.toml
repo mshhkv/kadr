@@ -1,0 +1,12 @@
+[build-system]
+requires = ["maturin>=1.5,<2"]
+build-backend = "maturin"
+
+[project]
+name = "kadr_core"
+version = "0.1.0"
+description = "Kadr's render core: GPU compositing (wgpu/Metal) behind the Python engine"
+requires-python = ">=3.10"
+
+[tool.maturin]
+features = []

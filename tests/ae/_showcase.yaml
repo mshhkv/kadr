@@ -1,0 +1,974 @@
+# every AE coverage film in a row, labelled — for human eyes: kadr render tests/ae/_showcase.yaml --gpu -o out/ae_showcase.mp4
+film:
+  size:
+  - 720
+  - 450
+  fps: 25
+  duration: 127.0
+  background: '#111111'
+layers:
+- id: c0
+  type: comp
+  src: 00_own_shader.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 0.0
+  out: 2.0
+- id: t0
+  type: text
+  text: 'Свой шейдер: полосы из файла и волна текста из документа'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 0.0
+  out: 2.0
+- id: c1
+  type: comp
+  src: 00_shader_layer.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 2.0
+  out: 4.0
+- id: t1
+  type: text
+  text: Слой, нарисованный своим шейдером, в повороте и в 3D
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 2.0
+  out: 4.0
+- id: c2
+  type: comp
+  src: 18_gooey.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 4.0
+  out: 6.0
+- id: t2
+  type: text
+  text: 'Жидкое слияние: размытие группы + порог'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 4.0
+  out: 6.0
+- id: c3
+  type: comp
+  src: 32_displace.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 6.0
+  out: 8.0
+- id: t3
+  type: text
+  text: 'Смещение: кипящий текст, рваный край, сдвиг по карте'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 6.0
+  out: 8.0
+- id: c4
+  type: comp
+  src: 33_warp.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 8.0
+  out: 10.0
+- id: t4
+  type: text
+  text: Волна, круги по воде, линза
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 8.0
+  out: 10.0
+- id: c5
+  type: comp
+  src: 34_glitch.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 10.0
+  out: 12.0
+- id: t5
+  type: text
+  text: 'Глитч: сбой сигнала'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 10.0
+  out: 12.0
+- id: c6
+  type: comp
+  src: 31_rgb_split.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 12.0
+  out: 14.0
+- id: t6
+  type: text
+  text: Расхождение цветовых каналов
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 12.0
+  out: 14.0
+- id: c7
+  type: comp
+  src: 35_halftone_mosaic.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 14.0
+  out: 16.0
+- id: t7
+  type: text
+  text: Полутоновый растр и мозаика
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 14.0
+  out: 16.0
+- id: c8
+  type: comp
+  src: 37_radial_blur.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 16.0
+  out: 18.0
+- id: t8
+  type: text
+  text: Зум- и круговое размытие
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 16.0
+  out: 18.0
+- id: c9
+  type: comp
+  src: 50_zoom_transition.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 18.0
+  out: 20.0
+- id: t9
+  type: text
+  text: Зум-переход между сценами
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 18.0
+  out: 20.0
+- id: c10
+  type: comp
+  src: 15_morph.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 20.0
+  out: 22.0
+- id: t10
+  type: text
+  text: 'Морфинг: фигура перетекает в фигуру'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 20.0
+  out: 22.0
+- id: c11
+  type: comp
+  src: 16_repeater.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 22.0
+  out: 24.0
+- id: t11
+  type: text
+  text: 'Повторитель: лучи, ступени, спираль'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 22.0
+  out: 24.0
+- id: c12
+  type: comp
+  src: 17_merge_offset.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 24.0
+  out: 26.0
+- id: t12
+  type: text
+  text: Слияние контуров и расширение / сжатие
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 24.0
+  out: 26.0
+- id: c13
+  type: comp
+  src: 12_text_on_path.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 26.0
+  out: 28.0
+- id: t13
+  type: text
+  text: Текст по кривой
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 26.0
+  out: 28.0
+- id: c14
+  type: comp
+  src: 13_text_write_on.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 28.0
+  out: 30.0
+- id: t14
+  type: text
+  text: Заголовок прорисовывается контуром
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 28.0
+  out: 30.0
+- id: c15
+  type: comp
+  src: 20_mask_feather.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 30.0
+  out: 32.0
+- id: t15
+  type: text
+  text: Маски-кривые с растушёвкой
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 30.0
+  out: 32.0
+- id: c16
+  type: comp
+  src: 21_mask_reveal.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 32.0
+  out: 34.0
+- id: t16
+  type: text
+  text: Маска раскрывает картинку и заголовок
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 32.0
+  out: 34.0
+- id: c17
+  type: comp
+  src: 07_links.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 34.0
+  out: 36.0
+- id: t17
+  type: text
+  text: 'Связи: «хвост» за ведущим, шестерёнки от одной ручки'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 34.0
+  out: 36.0
+- id: c18
+  type: comp
+  src: 24_time_remap.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 36.0
+  out: 38.0
+- id: t18
+  type: text
+  text: 'Время: замедление, стоп-кадр, обратный ход'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 36.0
+  out: 38.0
+- id: c19
+  type: comp
+  src: 25_echo_posterize.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 38.0
+  out: 40.0
+- id: t19
+  type: text
+  text: Шлейфы и движение шагами
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 38.0
+  out: 40.0
+- id: c20
+  type: comp
+  src: 28_bloom.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 40.0
+  out: 42.0
+- id: t20
+  type: text
+  text: 'Свечение ярких мест: неон разгорается, тусклое не светится'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 40.0
+  out: 42.0
+- id: c21
+  type: comp
+  src: 29_flare_leak.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 42.0
+  out: 44.0
+- id: t21
+  type: text
+  text: Блик объектива и засветка плёнки
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 42.0
+  out: 44.0
+- id: c22
+  type: comp
+  src: 44_parallax.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 44.0
+  out: 46.0
+- id: t22
+  type: text
+  text: Объём из плоской картинки по карте глубины
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 44.0
+  out: 46.0
+- id: c23
+  type: comp
+  src: 22_stencil.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 46.0
+  out: 48.0
+- id: t23
+  type: text
+  text: 'Трафареты: картинка только внутри круга и вырезанные буквы'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 46.0
+  out: 48.0
+- id: c24
+  type: comp
+  src: 45_key.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 48.0
+  out: 49.5
+  speed: 0.666
+- id: t24
+  type: text
+  text: 'Хромакей: фон убран, отсвет снят; справа свет по краю'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 48.0
+  out: 49.5
+- id: c25
+  type: comp
+  src: 22_blend_modes.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 49.5
+  out: 52.0
+  speed: 0.3996
+- id: t25
+  type: text
+  text: Все режимы наложения
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 49.5
+  out: 52.0
+- id: c26
+  type: comp
+  src: 27_lut.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 52.0
+  out: 53.5
+  speed: 0.666
+- id: t26
+  type: text
+  text: 'Цветовая таблица LUT: исходник, половина силы, полная'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 52.0
+  out: 53.5
+- id: c27
+  type: comp
+  src: 26_curves.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 53.5
+  out: 55.0
+  speed: 0.666
+- id: t27
+  type: text
+  text: 'Цветовые кривые: слева исходник, справа после'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 53.5
+  out: 55.0
+- id: c28
+  type: comp
+  src: 39_emitter.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 55.0
+  out: 59.0
+- id: t28
+  type: text
+  text: 'Частицы: искры с отскоком, салют залпами, дым в завихрениях'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 55.0
+  out: 59.0
+- id: c29
+  type: comp
+  src: 39_newton.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 59.0
+  out: 64.0
+- id: t29
+  type: text
+  text: 'Твёрдые шары: катятся по полкам, толкаются, ложатся в кучу'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 59.0
+  out: 64.0
+- id: c30
+  type: comp
+  src: 39_trail.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 64.0
+  out: 68.0
+- id: t30
+  type: text
+  text: Излучатель идёт за слоем; рой держат притяжение и вихрь
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 64.0
+  out: 68.0
+- id: c31
+  type: comp
+  src: 39_rain.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 68.0
+  out: 71.0
+- id: t31
+  type: text
+  text: Дождь со смазом затвора и звёзды со шлейфом
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 68.0
+  out: 71.0
+- id: c32
+  type: comp
+  src: 41_plexus.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 71.0
+  out: 75.0
+- id: t32
+  type: text
+  text: 'Plexus: точки, связи и грани — плоско и облаком в 3D'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 71.0
+  out: 75.0
+- id: c33
+  type: comp
+  src: 41_form_grid.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 75.0
+  out: 79.0
+- id: t33
+  type: text
+  text: 'Form: сетка-полотно на волне и сетка, которая разлетается'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 75.0
+  out: 79.0
+- id: c34
+  type: comp
+  src: 48_sound.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 79.0
+  out: 87.0
+- id: t34
+  type: text
+  text: 'Звук двигает картинку: пульс, спектр, волна, искры'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 79.0
+  out: 87.0
+- id: c35
+  type: comp
+  src: 48_audiogram.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 87.0
+  out: 95.0
+- id: t35
+  type: text
+  text: 'Аудиограмма: весь звук столбиками, прозвучавшее закрашено'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 87.0
+  out: 95.0
+- id: c36
+  type: comp
+  src: 46_track.yaml
+  position:
+  - 360
+  - 200
+  in: 95.0
+  out: 99.0
+- id: t36
+  type: text
+  text: 'Слежение: картинка прибита к экрану, подпись идёт за башней'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 95.0
+  out: 99.0
+- id: c37
+  type: comp
+  src: 46_stabilize.yaml
+  position:
+  - 360
+  - 200
+  in: 99.0
+  out: 103.0
+  scale: 0.74
+- id: t37
+  type: text
+  text: 'Стабилизация: как снято, плавный ход, штатив'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 99.0
+  out: 103.0
+- id: c38
+  type: comp
+  src: 47_cutout.yaml
+  position:
+  - 360
+  - 200
+  scale: 0.74
+  in: 103.0
+  out: 106.0
+- id: t38
+  type: text
+  text: 'Вырезание: слово за предметом и предмет на другом фоне'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 103.0
+  out: 106.0
+- id: c39
+  type: comp
+  src: 43_studio.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 106.0
+  out: 110.0
+- id: t39
+  type: text
+  text: '3D: металл, лак и картинка на теле в студии с софтбоксами'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 106.0
+  out: 110.0
+- id: c40
+  type: comp
+  src: 43_text3d.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 110.0
+  out: 114.0
+- id: t40
+  type: text
+  text: '3D: объёмный текст и контур с фаской'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 110.0
+  out: 114.0
+- id: c41
+  type: comp
+  src: 51_svg.yaml
+  size:
+  - 720
+  - 400
+  position:
+  - 360
+  - 200
+  in: 114.0
+  out: 118.0
+- id: t41
+  type: text
+  text: 'сверх 50: вектор из файла — плоский, перекрашенный и отлитый в 3D'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 114.0
+  out: 118.0
+- id: c42
+  type: comp
+  src: 52_chart.yaml
+  size:
+  - 711
+  - 400
+  position:
+  - 360
+  - 200
+  in: 118.0
+  out: 123.0
+- id: t42
+  type: text
+  text: 'сверх 50: графики из чисел и таблицы'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 118.0
+  out: 123.0
+- id: c43
+  type: comp
+  src: 53_puppet.yaml
+  size:
+  - 600
+  - 400
+  position:
+  - 360
+  - 200
+  in: 123.0
+  out: 127.0
+- id: t43
+  type: text
+  text: 'сверх 50: картинка на булавках (Puppet)'
+  font: Arial
+  size: 22
+  color: '#ffffff'
+  position:
+  - 360
+  - 426
+  in: 123.0
+  out: 127.0

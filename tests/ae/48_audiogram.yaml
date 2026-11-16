@@ -1,0 +1,46 @@
+# AE 48: an audiogram — the whole sound drawn as bars, what has played takes a colour; under it its frequencies as a
+# mirrored soft shape, and a counter that reads the loudness
+film:
+  size: [720, 400]
+  fps: 25
+  duration: 8
+  background: "#10131a"
+  audio:
+    - {id: beat, src: beat.wav, role: music}
+layers:
+  - id: shape
+    type: spectrum
+    audio: beat
+    size: [640, 150]
+    position: [360, 285]
+    shape: area
+    mirror: true
+    bands: 40
+    range: [50, 8000]
+    fall: 0.5
+    color: {gradient: linear, from: [0, 0], to: [640, 0], stops: [[0, "#ee312466"], [0.5, "#ff9f0acc"], [1, "#ffd60a66"]]}
+  - id: line
+    type: spectrum
+    audio: beat
+    size: [640, 150]
+    position: [360, 285]
+    shape: line
+    mirror: true
+    bands: 40
+    range: [50, 8000]
+    fall: 0.5
+    width: 2
+    color: "#fff3c4"
+  - id: whole
+    type: wave
+    audio: beat
+    size: [640, 110]
+    position: [360, 110]
+    span: [0, 8]
+    shape: bars
+    bars: 96
+    gap: 0.4
+    color: "#3a4252"
+    played: "#ffd60a"
+  - {id: head, type: solid, color: "#ffffff", size: [2, 130], position: {0: [40, 110], 8: [680, 110], ease: linear}}
+  - {id: level, type: text, text: "=str(round(100 * amp(fall=0.3))) + ' %'", font: Arial, weight: 700, size: 26, color: "#ffffff", position: [360, 200]}

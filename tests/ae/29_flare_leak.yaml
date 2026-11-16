@@ -1,0 +1,6 @@
+# AE 29: a lens flare crossing the frame and a film light leak — both drawn by shaders, laid on by screen
+film: {size: [720, 400], fps: 25, duration: 2, background: "#0a0d14"}
+layers:
+  - {id: pic, type: image, src: map.png, size: [720, 400], position: [360, 200]}
+  - {id: leak, type: light_leak, size: [720, 400], position: [360, 200], blend: screen, speed: 0.4, strength: 0.7}
+  - {id: flare, type: flare, size: [720, 400], position: [360, 200], blend: screen, at: {0: [0.15, 0.25], 2: [0.75, 0.4]}}

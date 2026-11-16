@@ -1,0 +1,20 @@
+# beyond the fifty: a vector file as a layer (sharp at any size, recoloured) and its shape given thickness in 3D —
+# tests/ae/logo.svg flat, enlarged, in one colour, and cast in gold
+film: {size: [720, 400], fps: 25, duration: 4, background: "#14161b"}
+layers:
+  - {id: small, type: svg, src: logo.svg, position: [120, 80], scale: 0.8}
+  - {id: big, type: svg, src: logo.svg, position: [215, 205], scale: {0: 1.0, 4: 1.55, ease: inOut}, rotation: {0: -10, 4: 4, ease: inOut}}
+  - {id: mono, type: svg, src: logo.svg, position: [130, 345], size: [150, 90], color: "#ffffff", opacity: 0.85}
+  - id: cast
+    type: scene3d
+    size: [340, 400]
+    position: [550, 200]
+    samples: 10
+    scene:
+      environment: {src: studio, intensity: 1.2}
+      camera: {position: [0, 6, 130], look_at: [0, 0, 0], fov: 30}
+      lights:
+        - {type: spot, position: [-60, 100, 90], target: [0, 0, 0], intensity: 16000, angle: 34, penumbra: .9}
+      look: {glow: .18}
+      nodes:
+        - {shape: extrude, src: logo.svg, height: 30, depth: 8, bevel: 1.1, rotation: "=[8 * sin(1.1 * t), 38 * sin(0.8 * t), 0]", color: "#e2b04a", metal: 1, roughness: .24}

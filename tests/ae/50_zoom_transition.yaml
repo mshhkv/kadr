@@ -1,0 +1,10 @@
+# AE 50: a zoom transition — the first picture rushes at the camera into a blur, the second lands out of it
+film: {size: [720, 400], fps: 25, duration: 2, background: "#000000"}
+layers:
+  - {id: a, type: image, src: map.png, size: [720, 400], position: [360, 200], out: 1.0,
+     scale: {0.5: 1, 1.0: {v: 1.6, ease: in}}, opacity: {0.8: 1, 1.0: 0},
+     effects: [{type: radial_blur, zoom: {0.5: 0, 1.0: 0.8}}]}
+  - {id: scene, type: group, anchor: [360, 200], in: 0.8, scale: {0.8: 1.5, 1.4: {v: 1, ease: outCubic}}, opacity: {0.8: 0, 1.0: 1},
+     effects: [{type: radial_blur, zoom: {0.8: 0.9, 1.4: 0}}]}
+  - {id: b, type: solid, parent: scene, color: "#f4c430", size: [720, 400], position: [360, 200], in: 0.8}
+  - {id: bt, type: text, parent: scene, text: "NEXT", font: Arial, weight: 900, size: 160, color: "#101010", position: [360, 200], in: 0.8}

@@ -1,0 +1,6 @@
+film: {size: [720, 400], fps: 25, duration: 1, background: "#f0f0f0"}
+layers:
+  - {id: g1, type: gradient, kind: radial, size: [220, 220], position: [130, 200], stops: [[0, "#ff2020", 1], [1, "transparent", 0]]}
+  - {id: g2, type: gradient, kind: radial, size: [220, 220], position: [360, 200], interpolate: straight, stops: [[0, "#ff2020", 1], [1, "#000000", 0]]}
+  - {id: s1, type: shape, shape: ellipse, size: [220, 220], position: [590, 200], anchor: [110, 110],
+     fill: {gradient: radial, stops: [[0, "#ff2020", 1], [1, "#000000", 0]]}}

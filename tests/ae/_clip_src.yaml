@@ -1,0 +1,6 @@
+# the source clip of the time tests (clip.mp4): a ball that crosses in 2 s — where it is tells the source time
+# kadr render tests/ae/_clip_src.yaml -o tests/ae/clip.mp4
+film: {size: [320, 180], fps: 25, duration: 2, background: "#1b2a4a"}
+layers:
+  - {id: ball, type: shape, shape: ellipse, size: [40, 40], anchor: [20, 20], fill: "#ffd60a", position: {0: [30, 90], 2: [290, 90], ease: linear}}
+  - {id: clock, type: text, text: "=str(int(t * 25))", font: Arial, weight: 700, size: 30, color: "#ffffff", position: [160, 150]}

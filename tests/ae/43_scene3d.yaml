@@ -1,0 +1,32 @@
+# AE 43 and 8: a 3D scene written in the document from simple bodies — materials, a spot light with a soft shadow, a
+# glowing panel, depth of field (the focus travels from the near ball to the far one), motion blur of what moves
+film: {size: [720, 400], fps: 25, duration: 4, background: "#0b0d12"}
+layers:
+  - id: stage
+    type: scene3d
+    samples: 16
+    scene:
+      camera:
+        position: {0: [-30, 34, 150], 4: [30, 30, 140], ease: inOut}
+        look_at: [0, 14, 0]
+        fov: 32
+        lens: 2.2
+        focus: {0: 118, 1.2: 118, 2.8: 190, 4: 190, ease: inOut}
+      lights:
+        - {type: spot, position: [-80, 150, 110], target: [0, 10, 0], color: "#ffd2a6", intensity: 62000, angle: 30, penumbra: .8, shadow: true, soft: 9}
+        - {type: point, position: [70, 60, -40], color: "#6f9cff", intensity: 9000}
+        - {type: sky, color: "#a7acbf", ground: "#3a2415", intensity: .5}
+        - {type: panel, position: [0, 60, -68], look_at: [0, 10, 40], size: [70, 30], color: "#ff4fa3", intensity: 5}
+      look: {exposure: 1.05, glow: .5, filmic: .82, vignette: .4}
+      accept: [[fly]]                                  # the firefly is meant to hang in the air
+      nodes:
+        - {id: floor, shape: box, size: [400, 4, 300], position: [0, -2, 0], color: "#6e4a34", roughness: .55}
+        - {id: wall, shape: box, size: [400, 200, 4], position: [0, 98, -72], color: "#26324f", roughness: .9}
+        - {id: sign, shape: plane, size: [70, 30], position: [0, 60, -69.5], color: "#000000", emissive: "#ff4fa3", glow: 3}
+        - {id: ball, shape: sphere, radius: 13, position: [-34, 13, 34], color: "#ee3124", roughness: .35, clearcoat: .6}
+        - {id: gold, shape: sphere, radius: 9, position: [40, 9, -30], color: "#c9962f", roughness: .3, metal: 1}
+        - {id: tower, position: [4, 0, -4], rotation: {0: [0, 0, 0], 4: [0, 200, 0], ease: linear}, children: [
+            {shape: rbox, size: [22, 22, 22], radius: 3, position: [0, 11, 0], color: "#35a0c8", roughness: .5},
+            {shape: rbox, size: [15, 15, 15], radius: 2, position: [0, 29.5, 0], rotation: [0, 30, 0], color: "#ffd166", roughness: .45},
+            {shape: cylinder, radius: 5, height: 16, position: [0, 45, 0], color: "#f6f3ee", roughness: .3}]}
+        - {id: fly, shape: sphere, radius: 4, position: "=[60 * sin(t * 2.6), 40 + 8 * sin(t * 5), 40 * cos(t * 2.6)]", color: "#000000", emissive: "#ffd166", glow: 4}

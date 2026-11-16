@@ -1,0 +1,9 @@
+film: {size: [960, 540], fps: 25, duration: 2, background: "#e0e0e0"}
+layers:
+  - {id: g, type: group, anchor: [480, 270], scale: {0: 1, 2: 0.65}, blur: {0: 0, 2: 10}, opacity: {0: 1, 2: 0.3}, shadow: {blur: 16, offset: [8, 12], opacity: 0.5}}
+  - {id: a, type: image, parent: g, src: map.png, size: [420, 260], position: [330, 270]}
+  - {id: b, type: text, parent: g, text: "ГРУППА", font: Arial, size: 90, position: [560, 300], color: "#60041b"}
+  - {id: win, type: group, anchor: [760, 270], rotation: {0: 0, 2: 30}, matte: {src: hole}}
+  - {id: hole, type: shape, parent: win, shape: rect, size: [260, 360], position: [760, 270], anchor: [130, 180], fill: "#ffffff"}
+  - {id: inside, type: image, parent: win, src: map.png, size: [700, 500], position: [760, 270]}
+  - {id: label, type: text, parent: win, text: "окно", font: Arial, size: 60, position: [760, 270]}

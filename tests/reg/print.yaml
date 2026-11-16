@@ -1,0 +1,10 @@
+# ink printed on a surface (effects: print + blend multiply) on a page that turns and tilts: the ink's grain must stay
+# on the page
+film: {size: [540, 960], fps: 30, duration: 1, background: "#d8d4c8"}
+layers:
+  - {id: page, type: group, anchor: [270, 480], position: [270, 480], rotation: {0: -4, 1: 6}, rotation_x: {0: 0, 1: 25}, perspective: 900}
+  - {id: paper, type: image, parent: page, src: sand_small.png, size: [420, 560], position: [270, 480]}
+  - {id: day, type: text, parent: page, text: "26", font: Arial, weight: 900, size: 220, color: "#d7192a", position: [270, 470],
+     blend: multiply, effects: [{type: print, ink: 0.4, grain: 3, rough: 1.2, bleed: 0.6, wear: 0.3}]}
+  - {id: mon, type: text, parent: page, text: "JUNE 1974", font: Arial, weight: 700, size: 64, color: "#1a1a1a", position: [270, 640],
+     blend: multiply, effects: [{type: print}]}

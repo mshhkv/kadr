@@ -1,0 +1,8 @@
+film: {size: [720, 480], fps: 25, duration: 1, background: "#151515"}
+layers:
+  - {id: t1, type: text, text: "GLOW", size: 110, color: "#ff3b30", position: [180, 120], scale: [1.0, 0.35], blur: 6, blur_space: layer}
+  - {id: t2, type: text, text: "GLOW", size: 110, color: "#ff3b30", position: [180, 300], scale: [1.0, 0.35], blur: 6}
+  - {id: c1, type: shape, shape: rect, size: [180, 120], position: [540, 150], anchor: [90, 60], fill: "#ffffff", scale: [1.0, 0.4], rotation: 30,
+     shadow: {blur: 30, offset: [0, 30], opacity: 0.9, color: "#3a7be8", space: layer, outside: true}}
+  - {id: c2, type: shape, shape: ellipse, size: [140, 140], position: [540, 360], anchor: [70, 70], fill: "#ffd60a", scale: [1.6, 0.5],
+     effects: [{type: glow, radius: 14, strength: 1.0, space: layer}]}

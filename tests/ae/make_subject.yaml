@@ -1,0 +1,26 @@
+# the footage of the AE 47 films: a thing in front of a backdrop, made by Kadr itself (a red ball on a stack of blocks
+# sways before a soft wall) → kadr render tests/ae/make_subject.yaml --gpu -o tests/ae/subject.mp4, then
+#   kadr matte tests/ae/subject.mp4 --what subject
+# tests/ae/test_matte.py draws the same thing alone and compares the matte found with its true outline
+film: {size: [640, 360], fps: 25, duration: 3, background: "#2b3a55"}
+layers:
+  - {id: wall, type: gradient, kind: radial, center: [240, 150], radius: [520, 360], stops: [[0, "#7c8fb3"], [1, "#1c2436"]]}
+  - {id: grain, type: noise, frequency: 2.2, octaves: 4, seed: 4, opacity: 0.22, blend: overlay}
+  - id: thing
+    type: scene3d
+    samples: 6
+    scene:
+      camera: {position: [0, 44, 150], look_at: [0, 34, 0], fov: 30}
+      lights:
+        - {type: spot, position: [-70, 140, 120], target: [0, 30, 0], color: "#fff1dc", intensity: 60000, angle: 34, penumbra: .8}
+        - {type: point, position: [80, 50, 60], color: "#8fb0ff", intensity: 7000}
+        - {type: sky, color: "#c9cfe0", ground: "#5a4636", intensity: .7}
+      look: {exposure: 1.05, glow: 0, filmic: .82, shutter: 0.1}
+      nodes:
+        - id: stack
+          position: "=[26 * sin(t * 2.1), 0, 0]"
+          rotation: "=[0, 30 * sin(t * 1.3), 4 * sin(t * 2.1)]"
+          children:
+            - {shape: rbox, size: [26, 22, 26], radius: 3, position: [0, 11, 0], color: "#35a0c8", roughness: .5}
+            - {shape: rbox, size: [18, 16, 18], radius: 2, position: [0, 30, 0], rotation: [0, 30, 0], color: "#ffd166", roughness: .45}
+            - {shape: sphere, radius: 13, position: [0, 51, 0], color: "#ee3124", roughness: .35, clearcoat: .6}

@@ -1,0 +1,11 @@
+film: {size: [960, 540], fps: 25, duration: 4, background: "#303030"}
+layers:
+  - {id: cam, type: group, anchor: [480, 270], scale: {0: 1, 4: 1.25}, rotation: {0: 0, 4: -6}}
+  - {id: book, type: group, parent: cam, anchor: [300, 300], position: {0: [300, 300], 4: [340, 280]}, rotation: 8}
+  - {id: page, type: solid, parent: book, color: "#ece6d6", size: [200, 280], position: [300, 300]}
+  - {id: cover, type: image, parent: book, src: map.png, size: [200, 280], anchor: [0, 140], position: [200, 300], rotation_y: {0: 0, 3: -168}, perspective: 900, backface: hidden, shadow: {blur: 10, offset: [4, 6]}}
+  - {id: coverback, type: solid, parent: cover, color: "#8a1a2a", size: [200, 280], position: [100, 140], scale: [-1, 1], backface: hidden}
+  - {id: sign, type: image, parent: cam, src: map.png, size: [160, 100], anchor: [80, 100], position: [700, 200], rotation: "=25*sin(t*2*pi*1.2)*exp(-0.6*t)"}
+  - {id: mir, type: text, parent: cam, text: "ЗЕРКАЛО", font: Arial, size: 50, position: [700, 420], scale: [-1, 1]}
+  - {id: sk, type: text, parent: cam, text: "наклон", font: Arial, size: 44, position: [200, 80], skew: {0: 0, 4: 25}}
+  - {id: ring, type: shape, parent: cam, shape: ellipse, size: [80, 80], anchor: [40, 40], position: [880, 80], scale: [1.6, 0.6], stroke: {color: "#ffcc00", width: 5}}

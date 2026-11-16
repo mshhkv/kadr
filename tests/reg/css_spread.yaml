@@ -1,0 +1,8 @@
+film: {size: [720, 400], fps: 25, duration: 2, background: "#f4f1ea"}
+layers:
+  - {id: a, type: shape, shape: rect, size: [160, 100], position: [140, 200], anchor: [80, 50], fill: "#ffffff",
+     shadow: {blur: 34, spread: 10, offset: [0, 8], opacity: 0.6, color: "#d81e1e"}}
+  - {id: b, type: shape, shape: rect, size: [160, 100], position: [360, 200], anchor: [80, 50], fill: "#ffffff", radius: 20,
+     shadow: {blur: 4, spread: {0: 0, 2: 24}, offset: [0, 0], opacity: 0.9, color: "#1e5bd8", outside: true}}
+  - {id: c, type: shape, shape: ellipse, size: [140, 140], position: [580, 200], anchor: [70, 70], fill: "#202020",
+     shadow: {blur: 2, spread: -12, offset: [0, 30], opacity: 0.8, color: "#000000"}}

@@ -1,0 +1,9 @@
+# AE 28: glow of the bright places only — neon text that warms up, and a picture whose lights bloom
+film: {size: [720, 400], fps: 25, duration: 2, background: "#07080c"}
+layers:
+  - {id: neon, type: text, text: "OPEN", font: Arial, weight: 900, size: 120, color: "#ff2d6f", position: [360, 120],
+     effects: [{type: bloom, radius: 14, threshold: 0.3, strength: {0: 0, 1.2: 1.6}}]}
+  - {id: dim, type: shape, shape: rect, size: [220, 60], anchor: [110, 30], position: [180, 290], fill: "#3a3f52", radius: 10,
+     effects: [{type: bloom, radius: 14, threshold: 0.6}]}
+  - {id: hot, type: shape, shape: rect, size: [220, 60], anchor: [110, 30], position: [540, 290], fill: "#fff3c4", radius: 10,
+     effects: [{type: bloom, radius: 14, threshold: 0.6, tint: "#ffb040"}]}

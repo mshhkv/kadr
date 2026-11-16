@@ -1,0 +1,26 @@
+# AE 39: Particular — an emitter: sparks that fall and bounce, a firework of bursts, smoke carried by a swirling field
+film: {size: [720, 400], fps: 25, duration: 4, background: "#0b0d12"}
+layers:
+  - {id: floor, type: shape, shape: rect, size: [230, 2], position: [10, 351], fill: "#3a4252"}
+  - id: sparks
+    type: emitter
+    blend: add
+    emit: {at: [125, 330], rate: 260, direction: -90, spread: 34, speed: [260, 430]}
+    particle: {life: [1.4, 2.4], size: [3, 8], sprite: glow, color: ["#ffd60a", "#ff8a3d", "#fff3c4"], size_over_life: [1, 0.4],
+               opacity_over_life: [1, 1, 0]}
+    forces: {gravity: 620}
+    collide: {floor: 350, bounce: 0.5, friction: 0.25}
+  - id: firework
+    type: emitter
+    blend: add
+    emit: {at: [360, 150], rate: 0, bursts: [[0.3, 260], [1.7, 260], [3.0, 260]], direction: out, speed: [40, 330]}
+    particle: {life: [0.9, 1.5], size: [3, 5], sprite: streak, stretch: 0.07, color_over_life: ["#ffffff", "#7fd4ff", "#3d6bff", "#1b1f5c"],
+               opacity_over_life: [1, 1, 0.7, 0]}
+    forces: {gravity: 160, drag: 1.6}
+  - id: smoke
+    type: emitter
+    prewarm: 2
+    emit: {shape: line, at: [570, 372], to: [630, 372], rate: 55, direction: -90, spread: 24, speed: [50, 95]}
+    particle: {life: [2.4, 3.4], size: [26, 46], sprite: glow, blend: normal, color_over_life: ["#ffb35c", "#8f8a86", "#4b4f58"],
+               size_over_life: [0.5, 1.6, 2.4], opacity: 0.34, opacity_over_life: [0, 1, 0.6, 0]}
+    forces: {turbulence: {strength: 260, scale: 150, speed: 0.4}, wind: [18, -70], drag: 0.9}

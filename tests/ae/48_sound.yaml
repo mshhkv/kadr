@@ -1,0 +1,49 @@
+# AE 48: sound as a source — a disc that jumps on the kick, the snare flashing the ground, sparks on the hats, the
+# sound's frequencies as bars and round a circle, its own curve on top (Sound Keys, Audio Spectrum, Audio Waveform)
+film:
+  size: [720, 400]
+  fps: 25
+  duration: 8
+  background: "#0b0d12"
+  audio:
+    - {id: beat, src: beat.wav, role: music}
+layers:
+  - {id: flash, type: solid, color: "#2a3566", size: [720, 400], position: [360, 200], opacity: "=0.75 * band(1500, 6000, fall=0.18)"}
+  - id: bars
+    type: spectrum
+    audio: beat
+    size: [640, 130]
+    position: [360, 322]
+    bands: 56
+    range: [40, 10000]
+    color: {gradient: linear, from: [0, 130], to: [0, 0], stops: [[0, "#3d6bff"], [0.6, "#7fd4ff"], [1, "#ffffff"]]}
+  - id: scope
+    type: wave
+    audio: beat
+    size: [640, 70]
+    position: [360, 44]
+    window: 0.06
+    width: 2
+    color: "#7fd4ff"
+    opacity: 0.8
+  - id: sparks
+    type: emitter
+    blend: add
+    emit: {shape: circle, at: [360, 170], radius: 46, edge: true, rate: "=20 + 1400 * band(6000, 12000, fall=0.04)", direction: out, speed: [90, 260]}
+    particle: {life: [0.35, 0.8], size: [2, 5], sprite: glow, color: ["#ffd60a", "#fff3c4", "#ff8a3d"], opacity_over_life: [1, 1, 0]}
+    forces: {drag: 2.2}
+  - id: halo
+    type: spectrum
+    audio: beat
+    size: [300, 300]
+    position: [360, 170]
+    ring: "=52 + 12 * band(40, 110)"
+    bands: 40
+    range: [60, 9000]
+    symmetric: true
+    gap: 0.45
+    fall: 0.25
+    color: "#ff4fa3"
+    blend: add
+  - {id: disc, type: shape, shape: ellipse, size: [84, 84], anchor: [42, 42], position: [360, 170], fill: "#ee3124", scale: "=1 + 0.28 * band(40, 110)"}
+  - {id: dot, type: shape, shape: ellipse, size: [22, 22], anchor: [11, 11], position: [360, 170], fill: "#ffffff", scale: "=0.4 + 1.2 * amp(fall=0.08)"}

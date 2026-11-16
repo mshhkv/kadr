@@ -1,0 +1,14 @@
+# AE 39: Newton — solid balls: they roll down shelves, knock each other and lie in a pile
+film: {size: [720, 400], fps: 25, duration: 5, background: "#101418"}
+layers:
+  - {id: s1, type: shape, shape: line, points: [[150, 120], [400, 180]], stroke: {width: 4, color: "#566074"}}
+  - {id: s2, type: shape, shape: line, points: [[638, 180], [330, 265]], stroke: {width: 4, color: "#566074"}}
+  - {id: peg, type: shape, shape: ellipse, size: [56, 56], position: [182, 262], fill: "#566074"}
+  - {id: box, type: shape, shape: line, points: [[120, 60], [120, 380], [640, 380], [640, 60]], stroke: {width: 4, color: "#566074"}}
+  - id: balls
+    type: emitter
+    emit: {shape: line, at: [170, 40], to: [250, 40], rate: {0: 22, 3.4: 22, 3.5: 0, ease: hold}, direction: 90, spread: 20, speed: [20, 80]}
+    particle: {life: 30, size: [16, 30], sprite: disc, color: ["#ffd60a", "#35e0c8", "#ff5a7a", "#7fd4ff"], opacity_over_life: [1, 1]}
+    forces: {gravity: 900}
+    collide: {box: [122, -200, 638, 378], segments: [[150, 120, 400, 180], [638, 180, 330, 265]], circles: [{at: [210, 290], radius: 28}],
+              bounce: 0.35, friction: 0.05, each_other: true}

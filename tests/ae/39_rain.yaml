@@ -1,0 +1,14 @@
+# AE 39: rain smeared by the shutter (motion_blur) that dies on the ground, and spinning stars with an echo trail
+film: {size: [720, 400], fps: 25, duration: 3, background: "#0b0d12", motion_blur: true}
+layers:
+  - id: rain
+    type: emitter
+    prewarm: 2
+    emit: {shape: line, at: [-100, -20], to: [820, -20], rate: 500, direction: 80, spread: 4, speed: [900, 1200]}
+    particle: {life: 1, size: [2, 3], sprite: disc, color: "#bcd7ff", opacity: 0.8, opacity_over_life: [1, 1]}
+    collide: {floor: 380, kill: true}
+  - id: comet
+    type: emitter
+    echo: {count: 6, step: 0.04, decay: 0.7}
+    emit: {at: {0: [60, 300], 3: [660, 120], ease: linear}, rate: 60, direction: out, speed: [20, 60]}
+    particle: {life: 0.6, size: [6, 12], sprite: star, spin: [-360, 360], color: ["#ffd60a", "#ff5a7a"]}

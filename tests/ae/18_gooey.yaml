@@ -1,0 +1,7 @@
+# AE 18: liquid merging — a group blurred as a whole, then alpha_levels cuts the blur back to a hard edge
+film: {size: [720, 400], fps: 25, duration: 2, background: "#f4f1ea"}
+layers:
+  - {id: goo, type: group, blur: 14, effects: [{type: alpha_levels, low: 0.46, high: 0.54}]}
+  - {id: a, type: shape, parent: goo, shape: ellipse, size: [150, 150], anchor: [75, 75], position: [300, 200], fill: "#ff3b30"}
+  - {id: b, type: shape, parent: goo, shape: ellipse, size: [110, 110], anchor: [55, 55], position: {0: [540, 200], 2: [380, 200]}, fill: "#ff3b30"}
+  - {id: c, type: shape, parent: goo, shape: ellipse, size: [60, 60], anchor: [30, 30], position: {0: [300, 60], 2: [300, 150]}, fill: "#ff3b30"}

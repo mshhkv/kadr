@@ -1,0 +1,10 @@
+# AE 32: Turbulent Displace (built-in noise, boiling), a rough edge, and Displacement Map by another layer
+film: {size: [720, 400], fps: 25, duration: 2, background: "#efece4"}
+layers:
+  - {id: word, type: text, text: "HEAT", font: Arial, weight: 900, size: 120, color: "#d81e1e", position: [200, 110],
+     effects: [{type: displace, amount: [10, 10], size: 60, speed: 0.6}]}
+  - {id: rough, type: shape, shape: rect, size: [200, 110], anchor: [100, 55], position: [540, 110], fill: "#1e5bd8", radius: 16,
+     effects: [{type: displace, amount: [6, 6], size: 14}]}
+  - {id: lens, type: gradient, visible: false, kind: radial, size: [260, 260], position: {0: [200, 290], 2: [520, 290]},
+     stops: [[0, "#ff8000", 1], [1, "#808000", 0]]}
+  - {id: pic, type: image, src: map.png, size: [620, 190], position: [360, 290], effects: [{type: displace, map: lens, amount: [40, 0]}]}

@@ -1,0 +1,9 @@
+# AE 35: halftone dots (dark ink by darkness; light dots on dark, tinted by the picture), mosaic that resolves
+film: {size: [720, 400], fps: 25, duration: 2, background: "#f2efe6"}
+layers:
+  - {id: ramp, type: gradient, kind: linear, angle: 90, size: [220, 160], position: [130, 200], stops: [[0, "#ffffff", 1], [1, "#000000", 1]],
+     effects: [{type: halftone, cell: 9, angle: 45, ink: "#1a1a1a"}]}
+  - {id: back, type: solid, color: "#0d1630", size: [220, 160], position: [360, 200]}
+  - {id: ht2, type: image, src: map.png, size: [220, 160], position: [360, 200],
+     effects: [{type: curves, master: [0.6, 0.85, 0.95]}, {type: halftone, cell: 6, angle: 20, tint: 1, invert: 1, size: 1.1}]}
+  - {id: mo, type: image, src: map.png, size: [220, 160], position: [590, 200], effects: [{type: mosaic, cell: {0: 28, 2: 2}}]}

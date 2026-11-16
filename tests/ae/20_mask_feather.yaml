@@ -1,0 +1,9 @@
+# AE 20: a mask drawn as a curve, with feather — an oval vignette, a mask in the layer's own px that turns with it, one cut out of another
+film: {size: [720, 400], fps: 25, duration: 2, background: "#efece4"}
+layers:
+  - {id: oval, type: image, src: map.png, size: [220, 170], position: [125, 200], filter: {brightness: 1.5},
+     mask: {shape: ellipse, size: [170, 120], position: [40, 140], feather: 40}}
+  - {id: turn, type: image, src: map.png, size: [220, 170], position: [360, 200], filter: {brightness: 1.5}, rotation: {0: -12, 2: 12},
+     mask: {space: layer, feather: 6, d: "M110 0 L220 85 L110 170 L0 85 Z"}}
+  - {id: hole, type: image, src: map.png, size: [220, 170], position: [595, 200], filter: {brightness: 1.5},
+     mask: {feather: 4, position: [485, 115], paths: [{shape: rect, size: [220, 170], radius: 24}, {shape: ellipse, size: [90, 90], at: [65, 40], op: subtract}]}}

@@ -1,0 +1,9 @@
+# AE 22: stencil and silhouette — a group's picture kept only inside (outside) a moving shape; the letters cut by luma
+film: {size: [720, 400], fps: 25, duration: 2, background: "#f0ece2"}
+layers:
+  - {id: g1, type: group, isolate: true}
+  - {id: p1, type: image, parent: g1, src: map.png, size: [320, 230], position: [185, 200]}
+  - {id: s1, type: shape, parent: g1, shape: ellipse, size: [170, 170], anchor: [85, 85], position: {0: [110, 200], 2: [260, 200]}, fill: "#ffffff", blend: stencil-alpha}
+  - {id: g2, type: group, isolate: true}
+  - {id: p2, type: image, parent: g2, src: map.png, size: [320, 230], position: [535, 200]}
+  - {id: s2, type: text, parent: g2, text: "CUT", font: Arial, weight: 900, size: 130, color: "#ffffff", position: [535, 200], blend: silhouette-alpha}

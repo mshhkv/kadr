@@ -1,0 +1,36 @@
+# The smallest film: a card slides in, a word springs up, a counter runs. No media, no style — layers only.
+#   kadr check examples/hello/film.yaml          what is wrong with it, in words
+#   kadr frame examples/hello/film.yaml --at 1.5 -o frame.png
+#   kadr render examples/hello/film.yaml --gpu -o hello.mp4
+film: {size: [1280, 720], fps: 30, duration: 4, background: "#10131a"}
+layers:
+  - id: card
+    type: shape
+    shape: rect
+    size: [760, 300]
+    radius: 28
+    anchor: [380, 150]
+    fill: "#f4f1ea"
+    shadow: {blur: 40, offset: [0, 18], color: "#000000", opacity: .45}
+    position: {0: [640, 900], 0.7: [640, 360], ease: outCubic}
+    rotation: {0: -6, 0.7: 0, ease: outCubic}
+  - id: word
+    type: text
+    parent: card
+    text: "KADR"
+    font: Inter-Bold
+    size: 84
+    color: "#10131a"
+    position: [380, 108]
+    in: 0.8                                          # appears when the card has landed
+    scale: "=spring(lt, 0.5)"                       # springs up (lt: seconds since the layer began)
+  - id: count
+    type: text
+    parent: card
+    text: "='{:.0f} кадров'.format(iv(t, 1.2, 3.2, 0, 120, 'outCubic'))"     # a number that runs from 0 to 120
+    font: Inter-Regular
+    size: 44
+    color: "#c8452f"
+    position: [380, 240]
+    in: 1.0
+    opacity: {1.0: 0, 1.4: 1}

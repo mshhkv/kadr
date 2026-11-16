@@ -1,0 +1,21 @@
+# AE 41: Form — a grid of points carried by a smooth field: a waving sheet seen at a tilt, then a grid that bursts apart
+film: {size: [720, 400], fps: 25, duration: 4, background: "#0a0f1a"}
+layers:
+  - id: sheet
+    type: plexus
+    size: [620, 420]
+    position: [180, 215]
+    scale: 0.5
+    points: {grid: [30, 20], size: 3, color: "#35e0c8", wander: {amount: [0, 0, 120], scale: 210, speed: 0.45}}
+    links: {width: 0.9, color: "#35e0c8", opacity: 0.55}
+    turn: [62, 0, 12]
+    lens: 900
+    fade: 0.8
+  - id: burst
+    type: plexus
+    seed: 3
+    size: [300, 300]
+    position: [545, 200]
+    points: {grid: [22, 22], margin: 30, size: [2, 4], color: ["#ff5a7a", "#ffd60a", "#ffffff"], sprite: glow,
+             wander: {amount: {0: 0, 1.0: 0, 2.4: 150, 4: 30, ease: inOut}, scale: 120, speed: 0.5}}
+    links: false

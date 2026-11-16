@@ -1,0 +1,12 @@
+# AE 24: Time Remap — the same clip as it is; slowed to a crawl and then let go (with frame blending); frozen and played back
+film: {size: [720, 400], fps: 25, duration: 2, background: "#0c0f14"}
+layers:
+  - {id: plain, type: video, src: clip.mp4, size: [216, 122], position: [125, 110]}
+  - {id: t0, type: text, text: "как есть", font: Arial, size: 18, color: "#9aa4b2", position: [125, 190]}
+  - {id: ramp, type: video, src: clip.mp4, size: [216, 122], position: [360, 110], frame_blend: true,
+     time: {0: 0, 0.4: 0.4, 1.4: {v: 0.62, ease: [0.6, 0, 0.2, 1]}, 2: 1.96, ease: linear}}
+  - {id: t1, type: text, text: "замедление и разгон", font: Arial, size: 18, color: "#9aa4b2", position: [360, 190]}
+  - {id: back, type: video, src: clip.mp4, size: [216, 122], position: [595, 110], time: {0: 0, 0.8: 1.2, 1.2: {v: 1.2, ease: linear}, 2: 0.2, ease: linear}}
+  - {id: t2, type: text, text: "стоп-кадр и назад", font: Arial, size: 18, color: "#9aa4b2", position: [595, 190]}
+  - {id: comp, type: comp, src: 16_repeater.yaml, size: [720, 400], position: [360, 300], scale: 0.42, time: {0: 2, 2: 0, ease: linear}}
+  - {id: t3, type: text, text: "вложенная композиция задом наперёд", font: Arial, size: 18, color: "#9aa4b2", position: [360, 385]}

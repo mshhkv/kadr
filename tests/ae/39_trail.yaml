@@ -1,0 +1,19 @@
+# AE 39: an emitter that follows a layer (a comet's tail), and a swarm held by a point that pulls and a vortex
+film: {size: [720, 400], fps: 25, duration: 4, background: "#0b0d12"}
+layers:
+  - id: tail
+    type: emitter
+    blend: add
+    emit: {at: "=layer('head').world", rate: 420, direction: out, speed: [0, 26], inherit: 0.25}
+    particle: {life: [0.5, 1.1], size: [3, 9], sprite: glow, color_over_life: ["#ffffff", "#ffd60a", "#ff5a3d", "#5c1b1b"], size_over_life: [1, 0.2]}
+    forces: {gravity: 60, turbulence: {strength: 160, scale: 90, speed: 0.5}, drag: 1.2}
+  - {id: head, type: shape, shape: ellipse, size: [14, 14], anchor: [7, 7], fill: "#ffffff",
+     position: {0: [40, 330], 1.3: [200, 70], 2.6: [330, 300], 4: [420, 90], ease: inOut}}
+  - id: swarm
+    type: emitter
+    blend: add
+    prewarm: 3
+    emit: {shape: circle, at: [570, 200], radius: 110, rate: 90, direction: out, spread: 360, speed: [10, 60]}
+    particle: {life: [3, 5], size: [2, 5], sprite: glow, color: ["#7fd4ff", "#b59cff", "#ffffff"], opacity_over_life: [0, 1, 1, 0]}
+    forces: {points: [{at: [570, 200], strength: 240}], vortex: [{at: [570, 200], strength: 260, radius: 260}], drag: 0.7}
+    links: {distance: 34, width: 0.8, color: "#7fd4ff", opacity: 0.5}

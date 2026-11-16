@@ -1,0 +1,10 @@
+.venv/
+*.egg-info/
+__pycache__/
+*.mp4
+*.png
+!examples/**/*.png
+!tests/**/*.png
+!tests/**/*.mp4
+out/
+.DS_Store

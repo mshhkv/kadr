@@ -1,0 +1,104 @@
+{
+"examples/figures/figures.yaml": [
+"12b3cdab88",
+"b625a93962",
+"49ff996639",
+"0484513b05"
+],
+"examples/figures/scene.yaml": [
+"24ec178329",
+"24ec178329",
+"24ec178329",
+"24ec178329"
+],
+"examples/hello/film.yaml": [
+"a79ea7cb0f",
+"6fabebad26",
+"d9272b88a6",
+"07a7bf8a59"
+],
+"tests/reg/css_grad.yaml": [
+"c8e27bba69",
+"c8e27bba69",
+"c8e27bba69",
+"c8e27bba69"
+],
+"tests/reg/css_lblur.yaml": [
+"6e60b3f9d9",
+"6e60b3f9d9",
+"6e60b3f9d9",
+"6e60b3f9d9"
+],
+"tests/reg/css_radius.yaml": [
+"4364d6c667",
+"008d3acbd3",
+"b5880b4e47",
+"41bd700968"
+],
+"tests/reg/css_shadow3d.yaml": [
+"c9c929cfb5",
+"c9c929cfb5",
+"c9c929cfb5",
+"c9c929cfb5"
+],
+"tests/reg/css_spread.yaml": [
+"38189b6098",
+"35e2c817f4",
+"ce61188ca3",
+"3c0defc9aa"
+],
+"tests/reg/grp.yaml": [
+"448906b8cc",
+"0a3fc21bc8",
+"c21c8770a3",
+"70728d9250"
+],
+"tests/reg/mb.yaml": [
+"256e6627bc",
+"ac5907f1d7",
+"9308660c93",
+"8fea595207"
+],
+"tests/reg/mix.yaml": [
+"e3eb0ae61d",
+"cd8a43e807",
+"a976d2c92c",
+"981644ce01"
+],
+"tests/reg/particles.yaml": [
+"46d7280935",
+"367e1671fd",
+"ed63aeb671",
+"8fb6d8cf32"
+],
+"tests/reg/plane.yaml": [
+"3cbd0b6da3",
+"66028c44c7",
+"c40b8dd2bb",
+"d3e069f1eb"
+],
+"tests/reg/print.yaml": [
+"a221fca9d4",
+"1cc3a57bde",
+"1b11fcb1aa",
+"725ec9f717"
+],
+"tests/reg/tails.yaml": [
+"83bcfee8bf",
+"1707693827",
+"c0adf088e8",
+"d716cf2582"
+],
+"tests/reg/tile.yaml": [
+"2be71974a0",
+"9b722a5a24",
+"4bf6aca464",
+"945c7ccd36"
+],
+"tests/reg/xf.yaml": [
+"9e00cacb6b",
+"202e9cb428",
+"9a47c5aef7",
+"5921da9b5c"
+]
+}

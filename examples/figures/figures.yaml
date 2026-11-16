@@ -1,0 +1,21 @@
+# Four block figures of the kit (scene.yaml beside this file) directed like actors: each has poses of his own name.
+# No body is written by hand and no string either — `shape: figure` brings both (kadr catalog figure).
+#   kadr render examples/figures/figures.yaml --gpu -o out/figures.mp4
+film:
+  size: [1280, 720]
+  fps: 30
+  duration: 7
+  background: "#000000"
+  poses:
+    bob: {from: figure, keys: [[0.5, .4, {hy: -.5, armRf: 1.6}], [2.4, .4, {hy: 0, armRf: 1.1}], [5.2, .3, {hy: .4, smile: .9}]]}
+    mia: {from: figure, keys: [[2.4, .3, {armRf: 2.6, armR: .5, up: 1, smile: 1}], [4.2, .4, {armRf: .3, armR: .5, up: .2}]]}
+    tim: {from: figure, keys: [[0, 0, {walk: 1, armLf: .1, armL: .14}], [4.5, .5, {walk: 0}], [5.2, .5, {hat: 0, up: 1, y: .12}], [5.9, .3, {y: 0}]]}
+    sam: {from: figure, keys: [[3.0, .8, {hy: .5, hp: .2}], [5.4, .5, {lid: 1, hp: .3, sag: 1}]]}
+layers:
+  - id: stage
+    type: scene3d
+    src: scene.yaml
+    samples: 16
+    camera: {position: {0: [-20, 66, 430], 7: [20, 70, 400]}, look_at: [0, 30, 0], fov: 30, lens: .6}
+    nodes:
+      tim: {position: {0: [45, 0, 20], 4.5: [45, 0, 120]}}

@@ -1,0 +1,41 @@
+# AE 43: lettering with thickness — a gold title with a rounded edge turning under the studio's softboxes, a red
+# lacquered heart cut from an SVG outline beside it (`shape: text`, `shape: extrude`, `bevel`)
+film: {size: [720, 400], fps: 25, duration: 4, background: "#0c0d10"}
+layers:
+  - id: stage
+    type: scene3d
+    samples: 12
+    scene:
+      environment: {src: studio, intensity: 1.15}
+      camera: {position: [0, 34, 200], look_at: [4, 19, 0], fov: 30}
+      lights:
+        - {type: spot, position: [-80, 150, 120], target: [0, 20, 0], color: "#fff0dc", intensity: 30000, angle: 32, penumbra: .9, shadow: true, soft: 10}
+      look: {exposure: 1.0, glow: .2, filmic: .82, vignette: .35}
+      nodes:
+        - {id: floor, shape: cylinder, radius: 140, height: 3, position: [0, -1.5, 0], color: "#1b1d22", roughness: .35}
+        - id: title
+          shape: text
+          text: "KADR"
+          font: Arial
+          weight: 900
+          size: 38
+          depth: 11
+          bevel: 1.3
+          position: [-18, 19.5, 0]
+          rotation: "=[0, 34 * sin(0.9 * t - 0.6), 0]"
+          color: "#e2b04a"
+          metal: 1
+          roughness: .24
+        - id: heart
+          shape: extrude
+          d: "M 50 90 C 20 65 0 45 0 25 C 0 8 12 0 25 0 C 36 0 46 7 50 17 C 54 7 64 0 75 0 C 88 0 100 8 100 25 C 100 45 80 65 50 90 Z"
+          height: 26
+          depth: 9
+          bevel: 2.4
+          bevel_steps: 5
+          position: [62, 15, 12]
+          rotation: "=[0, -30 + 20 * sin(1.3 * t), 0]"
+          color: "#c8102e"
+          roughness: .45
+          clearcoat: 1
+          clearcoat_roughness: .05
