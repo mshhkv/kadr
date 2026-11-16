@@ -91,20 +91,54 @@ ok('center у многоугольника — ошибка словами', len
 w = words([{**rect, 'anchor': 'middle'}])
 ok('неизвестное слово в anchor — ошибка словами', w[0].startswith('REFUSED') and 'center' in w[0])
 
-# ---- a fly-in is not «the layer is outside the frame»
+# ---- the report says what is seen and stays (five reels: 590 findings became 53, and the cut headlines came first)
 fly = dict(id='f', type='solid', color='#ffffff', size=[60, 60])
-w = words([{**fly, 'position': {0: [-200, 160], 0.4: [160, 160], 'ease': 'out'}}])
-ok('влёт из-за кадра (0,2 с снаружи в начале) — без замечаний', not any('за кадром' in x for x in w), '; '.join(w))
-w = words([{**fly, 'position': {0: [160, 160], 11.6: [160, 160], 12: [600, 160]}}])
-ok('вылет за кадр в конце — без замечаний', not any('за кадром' in x for x in w), '; '.join(w))
+has = lambda w, word: any(word in x for x in w)
+ok('влёт из-за кадра — без замечаний', not has(words([{**fly, 'position': {0: [-200, 160], 0.4: [160, 160], 'ease': 'out'}}]), 'кадр'))
+ok('вылет за кадр, и слой живёт там до конца, — без замечаний', not has(words([{**fly, 'position': {0: [160, 160], 3: [160, 160], 3.4: [600, 160]}}]), 'кадр'))
+ok('ушёл за кадр и вернулся — без замечаний', not has(words([{**fly, 'position': {0: [160, 160], 4: [160, 160], 4.2: [900, 160], 6: [900, 160], 6.2: [160, 160]}}]), 'кадр'))
 w = words([dict(id='g', type='group', out=6, position={0: [160, 160], 5.6: [160, 160], 6: [160, 900]}), {**fly, 'position': [160, 160], 'parent': 'g'}])
-ok('ребёнок группы, улетающей за кадр перед своим концом, — без замечаний', not any('за кадром' in x for x in w), '; '.join(w))
-w = words([{**fly, 'position': {0: [160, 160], 4: [160, 160], 4.2: [900, 160], 6: [900, 160], 6.2: [160, 160]}}])
-ok('ушёл за кадр посреди жизни — замечание', any('за кадром' in x for x in w))
+ok('ребёнок группы, улетающей за кадр, — без замечаний', not has(w, 'кадр'), '; '.join(w))
 w = words([{**fly, 'position': [900, 160]}])
-ok('всю жизнь за кадром — замечание', any('за кадром' in x for x in w))
-w = words([{**fly, 'position': {0: [-200, 160], 3: [-200, 160], 3.4: [160, 160]}}])
-ok('три секунды снаружи перед влётом — замечание', any('за кадром' in x for x in w))
+ok('ни разу не в кадре — одно замечание', sum('ни разу не попадает в кадр' in x for x in w) == 1, '; '.join(w))
+
+head = dict(id='h', type='text', font='Inter-Bold', size=40, position=[160, 160])
+w = words([{**head, 'text': 'ОЧЕНЬ ДЛИННЫЙ ЗАГОЛОВОК'}])
+ok('заголовок шире кадра — «обрезан краем кадра» с обеих сторон одной строкой', sum('обрезан краем кадра слева и справа' in x for x in w) == 1 and not has(w, 'безопасной'), '; '.join(w))
+w = words([{**head, 'text': 'ЗАГОЛОВОК У КРАЯ', 'size': 30}])
+ok('у края, но целиком в кадре — «безопасная зона», не «обрезан»', has(w, 'безопасной зоны слева и справа') and not has(w, 'обрезан'), '; '.join(w))
+ok('влетающий заголовок — без замечаний о зоне', not has(words([{**head, 'text': 'СЛОВО', 'position': {0: [-200, 160], 0.3: [160, 160], 'ease': 'out'}}]), 'зон'))
+w = words([{**head, 'text': 'СЛОВО', 'scale': {0: 1, 2: 1, 2.08: 3.4, 2.16: 1}}])
+ok('удар масштабом на три кадра — не выход из зоны', not has(w, 'зон') and not has(w, 'обрезан'), '; '.join(w))
+big = {**head, 'text': '1', 'size': 150}
+tall = film([{**big, 'position': [160, 95]}])
+from kadr.render import bbox, text_ink_y
+bx = bbox(tall, tall.layers[0], 0)
+iy = text_ink_y('Inter-Bold', 150, '1', 'center', 1.2)
+ok('крупная цифра: рамка выше зоны, сама цифра в зоне — без замечаний', bx[1] < 16 < bx[1] + (bx[3] - bx[1]) * iy[0] and not has([str(i) for i in check(tall)], 'зон'), f'рамка от {bx[1]:.0f}, буквы от {bx[1] + (bx[3] - bx[1]) * iy[0]:.0f}')
+w = words([dict(id='g', type='group', opacity=0, position=[160, 160]), {**head, 'text': 'ОЧЕНЬ ДЛИННЫЙ ЗАГОЛОВОК', 'parent': 'g'}])
+ok('текст в невидимой группе не разбирается', w == [], '; '.join(w))
+two = [{**head, 'id': 'a', 'text': 'ЖИВОТНЫЙ', 'size': 30, 'position': [160, 140]}, {**head, 'id': 'b', 'text': 'МАГНИТ', 'size': 30, 'position': [160, 170]}]
+A, Bx = (bbox(film(two), L_, 0) for L_ in film(two).layers)
+ok('две строки вплотную: рамки заходят друг на друга, буквы нет — без замечаний', A[3] > Bx[1] and not has(words(two), 'перекрываются'), f'рамка первой до {A[3]:.0f}, второй от {Bx[1]:.0f}')
+two[1]['position'] = [160, 150]
+ok('а буквы на буквах — замечание', has(words(two), 'перекрываются'))
+cross = [{**head, 'id': 'a', 'text': 'РАЗ', 'out': 2.08}, {**head, 'id': 'b', 'text': 'ДВА', 'in': 2}]
+ok('два слова сменяют друг друга с нахлёстом в два кадра — без замечаний', not has(words(cross), 'перекрываются'))
+w = words([{**head, 'text': 'ТЕКСТ', 'position': {0: [-150, 160], 0.3: [160, 160], 3: [160, 160], 3.3: [500, 160]}}])
+ok('быстрый влёт и вылет текста — не «не успеют прочитать»', not has(w, 'прочитать'), '; '.join(w))
+w = words([{**head, 'text': 'ТЕКСТ', 'size': 20, 'position': {0: [80, 60], 2: [80, 60], 2.4: [240, 260], 4.4: [240, 260], 'ease': 'inOut'}}])
+ok('текст, быстро едущий через кадр посреди жизни, — замечание', has(w, 'прочитать'), '; '.join(w))
+kink = {0: [100, 160], 2: [220, 160], 4: [220, 160], 'ease': 'linear'}
+w = words([dict(id='g', type='group', position=kink)] + [{**fly, 'id': f'c{j}', 'size': [30, 30], 'position': [160, 70 + 50 * j], 'parent': 'g'} for j in range(4)])
+ok('рывок группы — одно замечание на группу, а не на каждый её слой', sum('рыв' in x for x in w) == 1 and has(w, 'ещё 3 на группе g'), '; '.join(w))
+w = words([{**fly, 'position': {0: [-300, 160], 2: [-300, 160], 2.5: [160, 160], 'ease': 'out'}}])
+ok('резкий старт за кадром (влёт с ease out) — не рывок', not has(w, 'рыв'), '; '.join(w))
+w = words([{**fly, 'rotation': '=20 * (int(t * 2) % 2)', 'size': [120, 20]}])
+ok('слой, дёргающийся раз за разом, — одна строка со счётом', sum('рыв' in x for x in w) == 1 and has(w, 'рывки:'), '; '.join(w)[:160])
+from kadr.check import report
+rep = report(check(film([{**fly, 'position': kink}, {**head, 'text': 'ОЧЕНЬ ДЛИННЫЙ ЗАГОЛОВОК'}]))).splitlines()
+ok('в отчёте обрезанный текст стоит первым, в конце счёт по видам', 'обрезан' in rep[0] and rep[-1].startswith('— 2 замечаний: ') and 'обрезан текст 1' in rep[-1] and 'рывок 1' in rep[-1], rep[-1])
 
 # ---- 7. characters no font has
 text = dict(id='t', type='text', font='Inter-Bold', size=30, position=[160, 160])

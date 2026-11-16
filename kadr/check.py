@@ -3,7 +3,7 @@ import math
 import numpy as np
 from .doc import Issue
 from .media import probe
-from .render import bbox, place, content_size, shape_path
+from .render import bbox, place, content_size, shape_path, text_ink_y, text_of, phrase_at
 
 SAFE = 0.05            # title-safe margin, share of the frame
 READ_SPEED = 20.0      # px per frame above which moving text is hard to read
@@ -37,6 +37,24 @@ def top_edge(film, L, t, p):
         return np.array([b_[0] / b_[2] - a[0] / a[2], b_[1] / b_[2] - a[1] / a[2]])
     th = math.radians(p.rot if p.rot is not None else (L['rotation'].at(t) if L.get('rotation') else 0.0))
     return p[2] * (x1 - x0) * np.array([math.cos(th), math.sin(th)])
+
+
+FIRST = ('обрезан текст',)      # what must not be missed stands right after the errors
+
+
+def report(issues):
+    """the findings as text: errors first, then what is cut by the frame, then the rest in the film's order; the last
+    line counts them by kind — sixty lines are read when their first ones are the ones that matter"""
+    rank = lambda x: 0 if x.level == 'error' else 1 if getattr(x, 'kind', '') in FIRST else 2
+    rows = sorted(issues, key=rank)                            # stable: the film's order within a rank
+    if not rows:
+        return '— замечаний нет'
+    kinds = {}
+    for x in rows:
+        k = 'ошибки' if x.level == 'error' else (getattr(x, 'kind', '') or 'прочее')
+        kinds[k] = kinds.get(k, 0) + 1
+    tail = f'— {len(rows)} замечаний' + (': ' + ', '.join(f'{k} {n}' for k, n in kinds.items()) if len(kinds) > 1 or 'прочее' not in kinds else '')
+    return '\n'.join([str(x) for x in rows] + [tail])
 
 
 def run(film, strict=False):
@@ -95,12 +113,14 @@ def run(film, strict=False):
             names.append(f'кадр {sid} ({film.shot_kinds[sid]})' + (f' → {PART.get(rest, rest)}' if rest else ''))
         return ' × '.join(names)
 
-    def at(i0, i1, lid, msg, level='warn'):
+    def at(i0, i1, lid, msg, level='warn', kind=''):
         lid = named(lid)
         t0, t1 = i0 / fps, i1 / fps
         w = film.word_near(t0)
         span = f'{t0:.2f} с' if i0 == i1 else f'{t0:.2f}–{t1:.2f} с'
-        issues.append(Issue(level, msg, f'{span}{f" («{w}»)" if w else ""} {lid}'))
+        x = Issue(level, msg, f'{span}{f" («{w}»)" if w else ""} {lid}')
+        x.kind = kind
+        issues.append(x)
 
     if any(L['z'] is not None for L in film.layers if L['type'] != 'camera') and film.camera is None:
         issues.append(Issue('warn', 'у слоёв есть z, но нет камеры — z игнорируется'))
@@ -148,36 +168,89 @@ def run(film, strict=False):
                 if cps > CPS:
                     at(int(ph['start'] * fps), int(ph['end'] * fps), L['id'], f'подпись «{ph["text"][:40]}…» читать {cps:.0f} знаков/с (порог {CPS:.0f})')
 
+    # ---- what is said, and what is not (17.11.2026: five reels gave 590 findings, and the true ones — headlines cut
+    # by the frame's edge — were lost among them). A finding is about what is seen and stays:
+    #   · the layer as it is shown: its own opacity times every group's it hangs on (a text in a hidden group is not seen);
+    #   · a text's letters, not its line box (the box is taller than the ink by the line spacing: two tight lines
+    #     «overlapped», a big digit «left the safe zone» by its empty top);
+    #   · not its way in or out: outside the frame, past the safe zone or fast only while it arrives or leaves;
+    #   · one move of a group is one finding, not one for every layer on it
+    def shown(L, t):
+        o, q = 1.0, L
+        while q is not None and o > 0:
+            o *= q['opacity'].at(t)
+            q = q.get('parent_layer')
+        return o
+
+    def ink(L, t, b):
+        """a text's box on screen narrowed to its letters (upright text; a turned one keeps its box)"""
+        if b is None or L['type'] not in ('text', 'captions') or L.get('rotation') is not None and (L['rotation'].animated or L['rotation'].value):
+            return b
+        try:
+            if L['type'] == 'text':
+                txt = text_of(L, t)
+                y = text_ink_y(L['font'], L['size'], txt, L['align'], L['line_height'], L['tracking'], L.get('features', '')) if txt.strip() else None
+            else:
+                ph = phrase_at(L, t)
+                y = text_ink_y(L['font'], L['size'], ph['text'], 'center', L['line_height']) if ph else None
+        except Exception:                                      # a font that cannot be read is said elsewhere
+            return b
+        if y is None:
+            return b
+        return b[0], b[1] + (b[3] - b[1]) * y[0], b[2], b[1] + (b[3] - b[1]) * y[1]
+
+    TRANSIT = 6.0        # px per frame: a text moving faster is on its way, not standing to be read
+    SETTLE = 0.4         # s: shorter than this is a pop's overshoot or the way in / out
     mx, my = film.W * SAFE, film.H * SAFE
-    boxes = {}
+    boxes, jerk_runs = {}, []
     for L in film.layers:
         if L['type'] in ('camera', 'group'):            # a group draws nothing itself
             continue
         i0, i1 = max(0, int(math.floor(L['in'] * fps))), min(N, int(math.ceil(L['out'] * fps)) + 1)
         bs = [None] * N                                        # only the frames the layer is on: long films stay fast
+        op = [0.0] * N
         for i in range(i0, i1):
             bs[i] = bbox(film, L, i / fps)
+            if bs[i] is not None:
+                op[i] = shown(L, i / fps)
+                bs[i] = ink(L, i / fps, bs[i])
         boxes[L['id']] = bs
-        off, unsafe = [], {}
-        for i, b in enumerate(bs):
-            if b is None or L['opacity'].at(i / fps) <= 0:
-                continue
-            x0, y0, x1, y1 = b
-            if x1 <= 0 or y1 <= 0 or x0 >= film.W or y0 >= film.H:
-                off.append(i)
-            elif L['type'] in ('text', 'captions') and L['opacity'].at(i / fps) >= 0.2:   # a faint backdrop number is decor, not text to read
+        inside = lambda b: not (b[2] <= 0 or b[3] <= 0 or b[0] >= film.W or b[1] >= film.H)
+        on = [bs[i] is not None and op[i] >= 0.2 and inside(bs[i]) for i in range(N)]      # seen on screen at this frame
+        drawn = [i for i in range(i0, i1) if bs[i] is not None and op[i] > 0]
+        # outside the frame while it arrives, after it has left, or between two visits — nothing on screen is wrong;
+        # never once inside it — the layer is not in the film at all (a wrong position, most likely)
+        if drawn and not any(inside(bs[i]) for i in drawn) and L['id'] not in styled:
+            at(drawn[0], drawn[-1], L['id'], 'слой ни разу не попадает в кадр: всё время, что он показан, он целиком за краем', kind='за кадром')
+        moved = [0.0] * N                                      # how far its box went since the frame before
+        for i in range(i0 + 1, i1):
+            if bs[i] is not None and bs[i - 1] is not None:
+                moved[i] = max(abs(u - v) for u, v in zip(bs[i], bs[i - 1]))
+        if L['type'] in ('text', 'captions') and L['id'] not in styled:
+            unsafe = {}
+            for i in range(i0, i1):
+                if not on[i] or moved[i] > TRANSIT or (i + 1 < N and moved[i + 1] > TRANSIT):
+                    continue
+                x0, y0, x1, y1 = bs[i]
                 for side, d in (('слева', mx - x0), ('сверху', my - y0), ('справа', x1 - (film.W - mx)), ('снизу', y1 - (film.H - my))):
                     if d > 0.5:
                         unsafe.setdefault(side, []).append((i, d))
-        for a, b in ranges(off if L['id'] not in styled else ()):
-            # a layer that flies in from outside the frame, or out of it, is outside for its first or last moments —
-            # that is the move itself (five reels of 16.11.2026: 237 of 248 such findings were these, and the real
-            # ones were lost among them). Reported: outside in the middle of its life, or for longer than a second
-            # (its first and last moments on screen: a child of a group that ends has no end of its own in the document)
-            edge = a - 2 < i0 or b + 2 >= i1 or bs[a - 1] is None or bs[a - 2] is None or bs[b + 1] is None or bs[b + 2] is None
-            if edge and (b - a + 1) / fps <= 1.0 and (b - a + 1) < 0.5 * sum(x is not None for x in bs):
-                continue
-            at(a, b, L['id'], 'слой виден по времени, но целиком за кадром')
+            found = {}                                         # (first, last, cut by the edge?) → [(side, by how much)]
+            for side, hits in unsafe.items():
+                depth, margin = dict(hits), (mx if side in ('слева', 'справа') else my)
+                for a, b in ranges([i for i, _ in hits]):
+                    if (b - a + 1) / fps < SETTLE:
+                        continue
+                    worst = max(depth[i] for i in range(a, b + 1))
+                    cut = worst - margin > 1.0
+                    found.setdefault((a, b, cut), []).append((side, worst - margin if cut else worst))
+            for (a, b, cut), sides in found.items():
+                where_ = ' и '.join(sd for sd, _ in sides)
+                by = max(v for _, v in sides)
+                if cut:
+                    at(a, b, L['id'], f'текст обрезан краем кадра {where_}: до {by:.0f} px букв за краем — уменьшите size, перенесите строку или подвиньте', kind='обрезан текст')
+                else:
+                    at(a, b, L['id'], f'текст выходит из безопасной зоны {where_} на {by:.0f} px', kind='безопасная зона')
         if L['type'] == 'image' and L['fit'] == 'cover':
             gaps = {}
             for i, b in enumerate(bs):
@@ -188,12 +261,7 @@ def run(film, strict=False):
             for side, hits in gaps.items():
                 depth = dict(hits)
                 for a, b in ranges([i for i, _ in hits]):
-                    at(a, b, L['id'], f'фон не закрывает кадр {side}: дыра до {max(depth[i] for i in range(a, b + 1)):.0f} px')
-        for side, hits in (unsafe.items() if L['id'] not in styled else ()):
-            depth = dict(hits)
-            for a, b in ranges([i for i, _ in hits]):
-                worst = max(depth[i] for i in range(a, b + 1))
-                at(a, b, L['id'], f'текст выходит из безопасной зоны {side} на {worst:.0f} px')
+                    at(a, b, L['id'], f'фон не закрывает кадр {side}: дыра до {max(depth[i] for i in range(a, b + 1)):.0f} px', kind='дыра в фоне')
 
         # motion: velocity of the layer centre and of its size on screen
         if L['type'] == 'captions':                          # captions don't move; a new phrase is not a jerk
@@ -210,19 +278,47 @@ def run(film, strict=False):
             v0 = np.array([tr[i][0] - tr[i - 1][0], tr[i][1] - tr[i - 1][1], *(wd[i] - wd[i - 1])])
             v1 = np.array([tr[i + 1][0] - tr[i][0], tr[i + 1][1] - tr[i][1], *(wd[i + 1] - wd[i])])
             dvs_all[i] = np.linalg.norm(v1 - v0)
-            if L['type'] in ('text', 'captions') and np.linalg.norm(v1[:2]) > READ_SPEED:
+            if L['type'] in ('text', 'captions') and on[i] and np.linalg.norm(v1[:2]) > READ_SPEED:
                 fast.append(i)
         # a jerk is a velocity change concentrated in one frame (a kink between keys, a start/stop without ease);
         # a smooth ease changes velocity over several frames, so its neighbours two frames away change almost as much
         # (a reframed clip is slid frame of footage by frame of footage: 24 fps footage in a 25 fps film repeats a frame a second, and the layer with it)
         jerks = [] if L['id'] in styled or L['id'] in getattr(film, 'sound_driven', ()) or L.get('reframe') else [(i, d) for i, d in dvs_all.items()                # both neighbours must exist: a layer just appearing has no «before»
                  if i - 2 in dvs_all and i + 2 in dvs_all and d > JERK and d > 2.5 * max(dvs_all[i - 2], dvs_all[i + 2])
-                 and L['opacity'].at(i / fps) >= 0.2]          # a move while the layer is still invisible is not seen
+                 and on[i - 1] and on[i] and on[i + 1]]        # a start or a stop outside the frame, or while it is not shown (a loop's restart), is not seen
         dvs = dict(jerks)
         for a, b in ranges([i for i, _ in jerks]):
-            at(a, b, L['id'], f'рывок: скорость меняется скачком на {max(dvs[i] for i in range(a, b + 1)):.1f} px/кадр — нужен ease или ключ без излома')
+            jerk_runs.append((a, b, L, max(dvs[i] for i in range(a, b + 1))))
         for a, b in ranges(fast if L['id'] not in styled else ()):
-            at(a, b, L['id'], f'текст движется быстрее {READ_SPEED:.0f} px/кадр — его не успеют прочитать')
+            # fast on its way in or out (it was not on screen just before, or is not just after) — that is the move, nobody reads it then
+            arriving = any(not on[i] for i in range(max(0, a - 3), a)) or a - 3 < i0
+            leaving = any(not on[i] for i in range(b + 1, min(N, b + 4))) or b + 3 >= i1
+            if (arriving or leaving) and (b - a + 1) / fps <= 0.8:
+                continue
+            at(a, b, L['id'], f'текст движется быстрее {READ_SPEED:.0f} px/кадр — его не успеют прочитать', kind='быстрый текст')
+
+    # one move is one finding: layers hanging on one group that jerk at the same frames are that group's jerk; a layer
+    # that jerks again and again (a shake, a step of a walk — or a formula with a kink in it) is one line with a count
+    def root(L):
+        q = L
+        while q.get('parent_layer') is not None:
+            q = q['parent_layer']
+        return q['id']
+    together = {}
+    for a, b, L, d in jerk_runs:
+        together.setdefault((a, b, root(L)), []).append((L, d))
+    per = {}
+    for (a, b, rt), who in together.items():
+        name = who[0][0]['id'] if len(who) == 1 else f'{who[0][0]["id"]} и ещё {len(who) - 1} на группе {rt}'
+        per.setdefault(name, []).append((a, b, max(d for _, d in who)))
+    for name, runs in per.items():
+        if len(runs) <= 2:
+            for a, b, d in runs:
+                at(a, b, name, f'рывок: скорость меняется скачком на {d:.1f} px/кадр — нужен ease или ключ без излома', kind='рывок')
+        else:
+            a, b, d = max(runs, key=lambda r_: r_[2])
+            at(runs[0][0], runs[-1][1], name, f'рывки: {len(runs)} раз скорость меняется скачком, сильнее всего на {d:.1f} px/кадр в {a / fps:.2f} с — '
+                                              f'если это не задуманная тряска или шаг, нужен ease или формула без излома', kind='рывок')
 
     texts = sorted((L for L in film.layers if L['type'] in ('text', 'captions')), key=lambda L: L['in'])
     for ai, La in enumerate(texts):
@@ -241,7 +337,7 @@ def run(film, strict=False):
                 continue
             for i in range(max(0, int(lo * fps)), min(N, int(math.ceil(hi * fps)) + 1)):
                 p, q = boxes[a][i], boxes[b][i]
-                if min(La['opacity'].at(i / fps), Lb['opacity'].at(i / fps)) < 0.2:
+                if min(shown(La, i / fps), shown(Lb, i / fps)) < 0.2:
                     continue
                 tails = getattr(film, 'tr_tails', {})                # one of them is dissolving out under a transition
                 if any(x in tails and tails[x][0] <= i / fps < tails[x][1] for x in (a, b)):
@@ -257,7 +353,9 @@ def run(film, strict=False):
                 if p and q and p[0] < q[2] and q[0] < p[2] and p[1] < q[3] and q[1] < p[3]:
                     hit.append(i)
             for x, y in ranges(hit):
-                at(x, y, f'{a} × {b}', 'текстовые слои перекрываются')
+                if (y - x + 1) / fps < 0.2:                    # letters crossing for a frame or two as one text leaves and the next arrives
+                    continue
+                at(x, y, f'{a} × {b}', 'текстовые слои перекрываются', kind='наложение надписей')
     for L in film.layers:                                      # a picture bent by pins: folds, thinning, jumps (kadr/puppet.py)
         if L['type'] == 'puppet':
             from . import puppet

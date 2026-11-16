@@ -157,10 +157,9 @@ def sheet(film: str, every: float = 1.0, at: list[str] | None = None, start: str
 @on_gpu
 def check(film: str, strict: bool = False) -> str:
     """The defect report of the document (kadr check): what will look wrong, by time and layer — no rendering."""
-    from .check import run
+    from .check import run, report
     f, _ = _film(film)
-    issues = run(f, strict=strict)
-    return '\n'.join(str(x) for x in issues) + (f'\n— {len(issues)} замечаний' if issues else '— замечаний нет')
+    return report(run(f, strict=strict))
 
 
 @mcp.tool()

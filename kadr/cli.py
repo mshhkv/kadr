@@ -507,11 +507,9 @@ def cmd_depth(a):
 
 
 def cmd_check(a, film):
-    from .check import run
+    from .check import run, report
     issues = run(film, strict=a.strict)
-    for x in issues:
-        print(x)
-    print(f'— {len(issues)} замечаний' if issues else '— замечаний нет')
+    print(report(issues))
     return 1 if any(x.level == 'error' for x in issues) else 0
 
 

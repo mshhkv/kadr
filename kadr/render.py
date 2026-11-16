@@ -90,6 +90,27 @@ def feature_set(features, tracking):
     return out
 
 
+@functools.lru_cache(2048)
+def text_ink_y(fontname, size, text, align, line_height, tracking=0.0, features=''):
+    """where the letters themselves are within the text's box, top to bottom, as shares of its height (0…1): the box
+    is whole lines (ascender to descender, times the line height), the ink of «МАГНЕТИЗМ» is its middle 60 % — two
+    lines set tight overlap as boxes and do not touch as letters. None: nothing to draw"""
+    glyphs, (w, h) = text_layout(fontname, size, text, align, line_height, tracking, features)
+    top, bot = None, None
+    for g, x, y, ci in glyphs:
+        if text[ci].isspace():
+            continue
+        f, gi = glyph_face(fontname, g)
+        f.set_char_size(int(round(size * 64)))
+        f.load_glyph(gi, FT_FLAGS)
+        m = f.glyph.metrics
+        a, b = y - m.horiBearingY / 64, y - m.horiBearingY / 64 + m.height / 64
+        top, bot = (a if top is None else min(top, a)), (b if bot is None else max(bot, b))
+    if top is None or h <= 0:
+        return None
+    return max(0.0, top / h), min(1.0, bot / h)
+
+
 def missing_glyphs(fontname, text):
     """the characters of `text` that no font of the chain «A|B» has (drawn as the first font's empty box), in order,
     each once; spaces, line breaks and the invisible joiners / selectors of emoji are not characters to draw"""
