@@ -80,13 +80,70 @@ for what, layers in (('cutout без вырезки назван', [dict(V, src=
     except Exception as e:
         ok(what, False, f'падение: {type(e).__name__}: {e}')
 
+# --- another system's matte program: whatever speaks the language answers (Windows and Linux have no Vision; the
+# stand-in here calls «the thing» what is brighter than middle grey — the plumbing is what is tested)
+EX = os.path.join(HERE, 'matte_tool_example.py')
+os.environ['KADR_MATTE_TOOL'] = EX
+try:
+    yy, xx = np.mgrid[0:H, 0:W]
+    disc = lambda cx, cy: np.where(((xx - cx) ** 2 + (yy - cy) ** 2 <= RAD ** 2)[..., None], 255, 20).astype(np.uint8).repeat(3, 2)
+    cx_of = lambda i: 60 + 8 * i
+    C = clip('own.mp4', [disc(cx_of(i), 90) for i in range(N)])
+    ok('своя программа вырезания запускается вместо системной', mt.tool()[-1] == EX and len(mt.tool()) == 2, ' '.join(os.path.basename(v) for v in mt.tool()))
+    rep = mt.run(C, 'subject')
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', rep['out'], '-f', 'rawvideo', '-pix_fmt', 'gray', '-'], capture_output=True).stdout
+    M = np.frombuffer(raw, np.uint8).reshape(-1, H, W) > 127
+    true = lambda i: (xx - cx_of(i)) ** 2 + (yy - 90) ** 2 <= RAD ** 2
+    iou = min(float((true(i) & M[i]).sum() / (true(i) | M[i]).sum()) for i in (0, 9, 19))
+    ok('клип через неё: вырезка каждого кадра на своём месте', len(M) == N and rep['frames'] == N and rep['empty'] == 0 and iou > .9 and abs(rep['cover'] - math.pi * RAD ** 2 / (W * H)) < .01,
+       f'кадров {len(M)}, совпадение площади не меньше {iou * 100:.1f} %, доля кадра {rep["cover"] * 100:.1f} %')
+    rep = mt.run(C, 'subject', point=(5, 5), out=os.path.join(D, 'own_none.mp4'))
+    ok('под точкой ничего нет — файл не пишется', rep['out'] is None and rep['empty'] == N and not os.path.exists(os.path.join(D, 'own_none.mp4')), f'пустых кадров {rep["empty"]} из {rep["frames"]}')
+    from PIL import Image
+    P = os.path.join(D, 'own.png')
+    Image.fromarray(disc(200, 70)).save(P)
+    rep = mt.run(P, 'subject')
+    got = np.asarray(Image.open(rep['out']).convert('L')) > 127
+    tr = (xx - 200) ** 2 + (yy - 70) ** 2 <= RAD ** 2
+    ok('фотография через неё', rep['out'].endswith('own.matte.png') and float((tr & got).sum() / (tr | got).sum()) > .97, f'совпадение площади {float((tr & got).sum() / (tr | got).sum()) * 100:.1f} %')
+    j = mt.pose(P)
+    ok('суставы приходят в пикселях самой фотографии', set(j) == {'nose'} and abs(j['nose'][0] - 200) < 1.5 and abs(j['nose'][1] - 70) < 1.5, str({k: tuple(round(float(v), 1) for v in q) for k, q in j.items()}))
+    from kadr import reframe as rf
+    rep = rf.run(C, 'subject')
+    rows = __import__('json').load(open(rep['out'], encoding='utf-8'))['rows']
+    ok('кадрирование под вертикаль через неё: предмет найден там, где он есть', rep['seen'] == rep['samples'] == len(rows) and abs(rows[0][0] - cx_of(0)) < 3 and abs(rows[-1][0] - cx_of((len(rows) - 1) * rf.STEP)) < 3,
+       f'замеров {rep["samples"]}, середина по x: {rows[0][0]:.0f} → {rows[-1][0]:.0f} (на самом деле {cx_of(0)} → {cx_of((len(rows) - 1) * rf.STEP)})')
+    os.environ['KADR_MATTE_TOOL'] = os.path.join(D, 'nope.py')
+    try:
+        mt.tool()
+        ok('названной программы нет — сказано', False)
+    except RuntimeError as e:
+        ok('названной программы нет — сказано', 'KADR_MATTE_TOOL' in str(e), str(e)[:60])
+finally:
+    del os.environ['KADR_MATTE_TOOL']
+
+# a system that is not macOS: its own program is kadr/matte_tool.py, and until it is written Kadr says what to do
+real, own = sys.platform, mt.OWN
+try:
+    sys.platform = 'win32'
+    mt.OWN = os.path.join(D, 'matte_tool.py')
+    try:
+        mt.tool()
+        ok('не macOS и программы ещё нет — сказано, что написать и где описание', False)
+    except RuntimeError as e:
+        ok('не macOS и программы ещё нет — сказано, что написать и где описание', all(w in str(e) for w in ('matte_tool.py', 'AGENTS.md', 'matte_tool_example.py')), str(e)[:70])
+    shutil.copy(EX, mt.OWN)
+    ok('не macOS, программа написана — работает она', mt.tool()[-1] == mt.OWN and mt.run(P, 'subject', out=os.path.join(D, 'own2.png'))['out'] is not None)
+finally:
+    sys.platform, mt.OWN = real, own
+
 # --- the Mac's own subject finder on a thing drawn by Kadr, against the thing's true outline
 try:
     mt.tool()
     have = True
 except RuntimeError as e:
     have = False
-    print('     пропущено (нужен macOS с инструментами Xcode):', str(e).splitlines()[0][:100])
+    print('     пропущено (системная программа вырезания есть только на macOS с инструментами Xcode):', str(e).splitlines()[0][:100])
 if have:
     S = os.path.join(D, 'subject.mp4')
     shutil.copy(os.path.join(HERE, 'subject.mp4'), S)

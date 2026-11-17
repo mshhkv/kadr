@@ -282,7 +282,7 @@ def matte(files: list[str], what: str = 'person', point: str = '', sheet: str = 
     layer of that file shows only the cut-out (a word behind a speaker: the clip, the word, the clip again with
     cutout: true); cutout: {invert: true} — everything but; {feather: 3} — a soft edge. what: person (people),
     subject (whatever stands out: a product, an animal; point "x,y" in the first frame's px picks one thing), soft
-    (people with soft edges — fine hair). macOS only, built in, nothing downloaded. sheet: a .jpg of frames with the
+    (people with soft edges — fine hair). Built into macOS, nothing downloaded; on Windows and Linux it needs the machine's own matte program (AGENTS.md). sheet: a .jpg of frames with the
     cut-out over green — look at it."""
     from . import matte as mt
     out = []
@@ -307,7 +307,7 @@ def reframe(clip: str, what: str = 'person', sheet: str = '') -> str:
     video layer of that clip slides it so that the person — the face when one is seen, else the body's middle — stands
     in the middle of the frame, evened like a calm operator, never showing the footage's edge, each shot of the clip
     by itself; reframe: {smooth: 0.3} follows closer. what: person, or subject (whatever stands out: a product, an
-    animal). macOS only. sheet: a .jpg of frames with the 9:16 window drawn where it would stand — look at it."""
+    animal). Built into macOS; elsewhere it needs the machine's own matte program (AGENTS.md). sheet: a .jpg of frames with the 9:16 window drawn where it would stand — look at it."""
     from . import reframe as rf
     if not os.path.exists(clip):
         return 'нет файла: ' + clip

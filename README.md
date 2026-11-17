@@ -24,7 +24,7 @@ python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Script
 pip install -e ".[serve]"                                 # the engine; [serve] adds the MCP server
 pip install maturin && (cd core && maturin develop --release)     # the GPU core (kadr_core), a few minutes
 kadr selftest                                             # the «no shimmer» guarantee on this machine
-python tests/all.py                                       # everything, about three minutes
+python tests/all.py                                       # everything, about five minutes
 ```
 
 If your project lives in a cloud-synced folder, keep the virtual environment outside it.
@@ -49,6 +49,10 @@ kadr catalog effects                                       # everything a docume
 Give your agent [`skill/SKILL.md`](skill/SKILL.md): how to write a film, the work cycle (write → `check` → look at
 frames → fix), every layer and effect. With Claude Code, copy the `skill` folder into your skills.
 
+The engine is the agent's to change, too. [`AGENTS.md`](AGENTS.md) tells it so: a bug or a missing tool is fixed in
+Kadr's own code, with a test, instead of being worked around in every film — and it holds the map of the code and
+what must stay closed (the security gates; nothing is pushed anywhere without your yes).
+
 Kadr is also an MCP server — the renderer stays warm between calls, frames come back as pictures:
 
 ```json
@@ -71,9 +75,13 @@ not protected: [SECURITY.md](SECURITY.md).
 | | macOS (Apple silicon) | Windows, Linux |
 |---|---|---|
 | check, render, frame, sheet, scene, text, effects, 3D, sound | tested | **not tested yet.** The core is wgpu (Metal / D3D12 / Vulkan) and has no Apple-only code, the known breakages were fixed blind; expect rough edges (fonts by family name, reference frames) |
-| `kadr matte`, `cutout`, `kadr reframe`, `kadr puppet --pose` | Apple Vision | not available: they use the Mac's own vision framework. Ready-made mattes play everywhere |
+| `kadr matte`, `cutout`, `kadr reframe`, `kadr puppet --pose` | Apple Vision, built into the system | **left out on purpose**: nothing like it is built into these systems, and Kadr does not ship a model it has not tested. The socket is ready — one file, `kadr/matte_tool.py`, written once for the machine. Ready-made mattes play everywhere |
 | `kadr render --hw` | hardware HEVC | falls back to x264 |
 | `kadr depth` | yes | yes (PyTorch, in a Python of your choice: `KADR_ML_PYTHON`) |
+
+**On Windows or Linux, let your agent set the engine up first.** [`AGENTS.md`](AGENTS.md), «Windows and Linux», is its
+task list: build, run the tests, fix what breaks on this system in the engine itself, write the matte program. It will
+ask you before downloading a model.
 
 ## Contributing, licence
 

@@ -16,7 +16,13 @@
 
 The cutting is done by what macOS has built in — the Vision framework, the same that lifts a subject out of a picture
 in Photos: nothing is downloaded, nothing leaves the machine, about 0.03–0.07 s a frame. A small Swift program
-(kadr/matte.swift) is compiled on first use; it needs the Xcode command line tools (xcode-select --install)."""
+(kadr/matte.swift) is compiled on first use; it needs the Xcode command line tools (xcode-select --install).
+
+Windows and Linux have no such thing built in, so there the program is one that is written once for that machine:
+kadr/matte_tool.py (or any program named in $KADR_MATTE_TOOL) that speaks the language of matte.swift — frames in,
+mattes out; see its head, AGENTS.md «Windows and Linux» and the working skeleton tests/ae/matte_tool_example.py.
+Everything else here (kadr matte, cutout, kadr reframe, kadr puppet --pose) goes through tool() and does not care
+which program answers."""
 import hashlib, os, subprocess, sys
 
 IMAGES = ('.jpg', '.jpeg', '.png', '.webp', '.tif', '.tiff', '.heic', '.bmp')
@@ -29,11 +35,32 @@ def out_path(src):
     return stem + ('.matte.png' if ext.lower() in IMAGES else '.matte.mp4')
 
 
+OWN = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'matte_tool.py')     # the matte program of a system that is not macOS, once someone has written it
+
+
+def _python():
+    """the Python a matte program written in Python runs in: the one named for the models (as kadr depth), or this one"""
+    cfg = os.path.expanduser('~/.kadr/ml_python')
+    for py in (os.environ.get('KADR_ML_PYTHON'), open(cfg, encoding='utf-8').read().strip() if os.path.exists(cfg) else None):
+        if py and os.path.exists(py):
+            return py
+    return sys.executable
+
+
 def tool():
-    """the compiled matte program (built once into ~/.cache/kadr/bin, again when its source changes)"""
-    src = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'matte.swift')
+    """the matte program, as the start of a command line («W H what …» is added to it).
+    $KADR_MATTE_TOOL names one on any system; macOS has its own (matte.swift, built once into ~/.cache/kadr/bin, again
+    when its source changes); elsewhere it is kadr/matte_tool.py, if it has been written. A .py is run by _python()"""
+    own = os.environ.get('KADR_MATTE_TOOL') or (OWN if sys.platform != 'darwin' and os.path.exists(OWN) else None)
+    if own:
+        if not os.path.exists(own):
+            raise RuntimeError(f'KADR_MATTE_TOOL: нет файла {own}')
+        return [_python(), own] if own.lower().endswith('.py') else [own]
     if sys.platform != 'darwin':
-        raise RuntimeError('kadr matte работает на macOS: вырезание делает встроенная в систему Vision')
+        raise RuntimeError('на этой системе программы вырезания ещё нет: на macOS её роль играет встроенная Vision, здесь её нужно один раз написать — '
+                           'файл kadr/matte_tool.py (или любая программа, названная в KADR_MATTE_TOOL). Что она читает и что отвечает: AGENTS.md, '
+                           '«Windows and Linux»; рабочая заготовка — tests/ae/matte_tool_example.py. Готовые вырезки (*.matte.mp4, *.matte.png) играют и без неё')
+    src = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'matte.swift')
     exe = os.path.join(os.path.expanduser('~/.cache/kadr/bin'), 'kadr-matte-' + hashlib.sha1(open(src, 'rb').read()).hexdigest()[:10])
     if not os.path.exists(exe):
         os.makedirs(os.path.dirname(exe), exist_ok=True)
@@ -41,7 +68,7 @@ def tool():
         if r.returncode:
             raise RuntimeError('не собрать программу вырезания (нужны инструменты командной строки Xcode: xcode-select --install):\n' + r.stderr[-1500:])
         os.replace(exe + '.tmp', exe)
-    return exe
+    return [exe]
 
 
 def run(src, what='person', point=None, out=None):
@@ -65,7 +92,7 @@ def run(src, what='person', point=None, out=None):
         w, h = p['w'], p['h']
         rate = subprocess.run(['ffprobe', '-v', 'error', '-protocol_whitelist', 'file,pipe', '-select_streams', 'v:0', '-show_entries', 'stream=r_frame_rate', '-of', 'csv=p=0', src],
                               capture_output=True, text=True).stdout.strip().split(',')[0] or str(p['fps'])
-    cmd = [exe, str(w), str(h), what] + ([str(int(point[0])), str(int(point[1]))] if point else [])
+    cmd = exe + [str(w), str(h), what] + ([str(int(point[0])), str(int(point[1]))] if point else [])
     if still:
         r = subprocess.run(cmd, input=feed, capture_output=True)
         note = r.stderr.decode('utf-8', 'replace')
@@ -108,7 +135,7 @@ def pose(src):
     k = min(1.0, 1536 / max(im.size))
     small = im.resize((max(16, int(round(im.width * k))), max(16, int(round(im.height * k))))) if k < 1 else im
     bgra = np.concatenate([np.asarray(small)[..., ::-1], np.full((small.height, small.width, 1), 255, np.uint8)], -1)
-    r = subprocess.run([tool(), str(small.width), str(small.height), 'pose'], input=bgra.tobytes(), capture_output=True)
+    r = subprocess.run(tool() + [str(small.width), str(small.height), 'pose'], input=bgra.tobytes(), capture_output=True)
     raw = {}
     for ln in r.stdout.decode().splitlines():
         p = ln.split()

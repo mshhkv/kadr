@@ -34,7 +34,7 @@ def run(src, what='person', step=STEP):
     w, h = max(16, int(round(p['w'] * k / 2)) * 2), max(16, int(round(p['h'] * k / 2)) * 2)
     dec = subprocess.Popen(['ffmpeg', '-v', 'error', '-protocol_whitelist', 'file,pipe', '-i', src, '-an', '-vf', f"select='not(mod(n\\,{step}))',scale={w}:{h}:flags=area", '-fps_mode', 'passthrough',
                             '-f', 'rawvideo', '-pix_fmt', 'bgra', '-'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    r = subprocess.run([exe, str(w), str(h), 'boxes', what], stdin=dec.stdout, capture_output=True)
+    r = subprocess.run(exe + [str(w), str(h), 'boxes', what], stdin=dec.stdout, capture_output=True)
     dec.stdout.close()
     dec.wait()
     rows = [[float(v) for v in ln.split()] for ln in r.stdout.decode().splitlines() if ln.strip()]

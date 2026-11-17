@@ -129,7 +129,7 @@ def _block(job):
 def cmd_render(a, film):
     from .audio import mix, SR, LIMITER
     if a.hw and sys.platform != 'darwin':                      # the hardware encoder used is the Mac's; elsewhere: x264, said aloud
-        print('kadr render --hw: аппаратное кодирование пока только на Mac — кодирую x264', file=sys.stderr)
+        print('kadr render --hw: аппаратное кодирование пока только на Mac — кодирую x264 (как добавить кодер этой машины: AGENTS.md, «Windows and Linux»)', file=sys.stderr)
     t0 = time.time()
     if not a.fg:
         # polite by default (15.11.2026: a render made video and sound on the same Mac stutter «like a chewed tape»):
@@ -589,7 +589,7 @@ def main(argv=None):
     pp.add_argument('picture'); pp.add_argument('-o', '--out', required=True, help='лист, .jpg или .png')
     pp.add_argument('--pins', nargs='*', help='булавки на пробу: 330,250 210,60'); pp.add_argument('--mesh', type=int, help='ячейка сетки, px')
     pp.add_argument('--cutout', action='store_true', help='картинка — фотография с вырезкой рядом (kadr matte)')
-    pp.add_argument('--pose', action='store_true', help='найти суставы человека на фото и напечатать их булавками (macOS)')
+    pp.add_argument('--pose', action='store_true', help='найти суставы человека на фото и напечатать их булавками (на macOS — встроено; на других системах нужна своя программа вырезания, AGENTS.md)')
     ct = sub.add_parser('cuts', help='склейки в клипе: с какой секунды начинается каждый план')
     ct.add_argument('clip')
     bt = sub.add_parser('beats', help='пульс музыки: темп и секунда каждого бита (в документе время пишется как beat:5)')
