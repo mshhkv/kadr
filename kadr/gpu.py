@@ -147,6 +147,12 @@ class GpuRenderer(Renderer):
             self.layer(canvas, L, p, t)
         return canvas
 
+    def frame_rgba_start(self, t):
+        """the frame over nothing (export with transparency), sent to the GPU and not waited for: `.get()` gives 8-bit
+        RGBA with straight colour — cli._rgba's arithmetic done on the GPU (straight8.wgsl) instead of numpy"""
+        self.f.background = None
+        return kc.to_rgba8_start(self.frame_comp(t))
+
     def frame_u8(self, t):
         """the frame as 8-bit RGB with Kadr's fixed dither (render.to_u8)"""
         if self._dither is None:

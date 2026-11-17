@@ -59,6 +59,20 @@ for ext, codec, tol in (('.mov', None, 3.0), ('.webm', 'libvpx-vp9', 25.0)):
 r = run('render', Y, '--gpu', '--alpha', '-o', os.path.join(D, 'seq', '%04d.png'))
 files = sorted(glob.glob(os.path.join(D, 'seq', '*.png')))
 ok('папка кадров PNG: по файлу на кадр, без потерь', r.returncode == 0 and len(files) == 30 and np.array_equal(np.asarray(Image.open(files[20])), want), f'файлов {len(files)}')
+# the straight colour and 8 bits are made on the GPU (straight8.wgsl): the same bytes as the numpy arithmetic it replaced,
+# give or take 1 where a division lands on a half (semi-transparent edges: a glow's soft rim is mostly that; the GPU's
+# division is within a few ulp, not correctly rounded). 1 of 255 is under ProRes 4444's own quantisation
+G = GpuRenderer(Film(Y))
+G.f.background = None
+diffs = []
+for tt in (.3, .6, .8, 1.1):
+    a = G.frame_comp(tt).download()
+    rgb, al = a[..., :3], a[..., 3:]
+    old = np.concatenate([np.clip(np.round(np.where(al > 1e-5, rgb / np.maximum(al, 1e-5), 0)), 0, 255), np.clip(np.round(al * 255), 0, 255)], -1)
+    diffs.append(np.abs(old - G.frame_rgba_start(tt).get().astype(float)))
+d = np.stack(diffs)
+ok('прозрачность на видеокарте = прежний расчёт на процессоре', d.max() <= 1 and (d > 0).mean() < 0.05,
+   f'наибольшая разница {d.max():.0f} из 255, отличаются {(d > 0).mean() * 100:.3f} % значений')
 r = run('render', Y, '--alpha', '-o', os.path.join(D, 'f.mp4'))
 ok('в .mp4 прозрачности не бывает — сказано, какие файлы годятся', r.returncode != 0 and '.mov' in r.stderr, r.stderr.strip()[:110])
 

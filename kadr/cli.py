@@ -13,7 +13,12 @@ from .render import Renderer, to_u8, font_file
 # the hardware encoders `kadr render --hw` may use, best first: (ffmpeg's name, its arguments, the stream's tag in mp4).
 # A row is written only after it was measured on a real machine (AGENTS.md, «Windows and Linux»): its quality figure
 # is the one that gave there what x264 crf 18 medium gives, with the same colours. The Mac's: q 85.
-HW_ENCODERS = [('hevc_videotoolbox', ['-q:v', '85'], 'hvc1')]
+# NVIDIA (17.11.2026, Windows 11, RTX 3070, driver 621.14, ffmpeg 8.1.2): constant QP 20, p5 + hq. Against the same
+# frames at crf 0, 1080×1920, 119 frames: footage + graphics 45.97 dB / 8.6 MB (x264 crf 18 medium 45.35 / 8.0),
+# pure graphics 54.4 dB / 0.96 MB (x264 52.8 / 1.12); encoding ~3× faster (0.6 s against 1.9). Not `-rc vbr -cq`:
+# without a -maxrate it sits at a default bitrate ceiling — cq 14 and cq 23 gave the same 5.8 MB, 44 dB, below x264
+HW_ENCODERS = [('hevc_videotoolbox', ['-q:v', '85'], 'hvc1'),
+               ('hevc_nvenc', ['-preset', 'p5', '-tune', 'hq', '-rc', 'constqp', '-qp', '20'], 'hvc1')]
 _hw = []
 
 
@@ -87,6 +92,8 @@ def _rgba(r, t):
     """the frame over nothing — what the film draws, with its transparency: 8-bit RGBA, colour not multiplied by alpha (the
     film's own background is left out)"""
     r.f.background = None
+    if hasattr(r, 'frame_rgba_start'):             # GPU: the division and the 8 bits on the card, a quarter of the bytes back
+        return r.frame_rgba_start(t).get()
     if hasattr(r, 'frame_comp'):
         a = r.frame_comp(t).download()
         rgb, al = a[..., :3], a[..., 3:]
@@ -102,6 +109,38 @@ ALPHA = {'.mov': ['-c:v', 'prores_ks', '-profile:v', '4444', '-pix_fmt', 'yuva44
          '.webm': ['-c:v', 'libvpx-vp9', '-pix_fmt', 'yuva420p', '-b:v', '0', '-crf', '24', '-row-mt', '1']}
 
 
+class _Feed:
+    """ffmpeg's stdin, written from a thread of its own: a write to the pipe waits while ffmpeg encodes, and without
+    this the GPU sat idle for that time — drawing and encoding took turns (Windows, RTX 3070, ProRes 4444 1080×1920:
+    ~32 ms to draw + ~45 ms to encode a frame, one after the other). A few frames are held, never more"""
+
+    def __init__(self, pipe, depth=4):
+        import queue
+        self.pipe, self.q, self.err = pipe, queue.Queue(depth), None
+        self.t = threading.Thread(target=self._run, daemon=True)
+        self.t.start()
+
+    def _run(self):
+        while (b := self.q.get()) is not None:
+            if self.err is None:
+                try:
+                    self.pipe.write(b)
+                except Exception as e:                    # ffmpeg gone: said at close(), the drawing does not hang
+                    self.err = e
+
+    def write(self, b):
+        if self.err is not None:
+            raise self.err
+        self.q.put(b)
+
+    def close(self):
+        self.q.put(None)
+        self.t.join()
+        self.pipe.close()
+        if self.err is not None:
+            raise self.err
+
+
 def _block(job):
     """render frames [i0, i1) in order (footage is read forward, no re-seeking) and encode them as one H.264 piece"""
     i0, i1, out, crf, preset = job
@@ -114,9 +153,20 @@ def _block(job):
                 Image.fromarray(_rgba(film, i / f.fps + SAMPLE), 'RGBA').save(out % i)
             return i1 - i0
         ff = subprocess.Popen(['ffmpeg', '-y', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', f'{f.W}x{f.H}', '-r', f'{f.fps:g}', '-i', '-', *ALPHA[kind], out], stdin=subprocess.PIPE)
-        for i in range(i0, i1):
-            ff.stdin.write(_rgba(film, i / f.fps + SAMPLE).tobytes())
-        ff.stdin.close()
+        if hasattr(film, 'frame_rgba_start'):      # frame i is drawn on the GPU while the CPU prepares frame i + 1
+            feed, back = _Feed(ff.stdin), None    # and ffmpeg encodes the frames before them
+            for i in range(i0, i1):
+                nxt = film.frame_rgba_start(i / f.fps + SAMPLE)
+                if back is not None:
+                    feed.write(back.get().tobytes())
+                back = nxt
+            if back is not None:
+                feed.write(back.get().tobytes())
+            feed.close()
+        else:
+            for i in range(i0, i1):
+                ff.stdin.write(_rgba(film, i / f.fps + SAMPLE).tobytes())
+            ff.stdin.close()
         ff.wait()
         from .media import close_all
         close_all()
@@ -130,18 +180,19 @@ def _block(job):
                            '-pix_fmt', 'yuv420p', out],
                           stdin=subprocess.PIPE)
     if gpu:                                        # frame i is drawn on the GPU while the CPU prepares frame i + 1
-        back = None
+        feed, back = _Feed(ff.stdin), None        # and ffmpeg encodes the frames before them
         for i in range(i0, i1):
             nxt = film.frame_start(i / f.fps + SAMPLE)
             if back is not None:
-                ff.stdin.write(back.get().tobytes())
+                feed.write(back.get().tobytes())
             back = nxt
         if back is not None:
-            ff.stdin.write(back.get().tobytes())
+            feed.write(back.get().tobytes())
+        feed.close()
     else:
         for i in range(i0, i1):
             ff.stdin.write(to_u8(film.frame(i / f.fps + SAMPLE)).tobytes())
-    ff.stdin.close()
+        ff.stdin.close()
     ff.wait()
     from .media import close_all
     close_all()                                    # this worker's next block is elsewhere in the film: free its decoders

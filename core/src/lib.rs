@@ -38,6 +38,7 @@ const KERNELS: &[(&str, &str)] = &[
     ("prep8", include_str!("wgsl/prep8.wgsl")),
     ("lzw", include_str!("wgsl/lzw.wgsl")),
     ("to8", include_str!("wgsl/to8.wgsl")),
+    ("straight8", include_str!("wgsl/straight8.wgsl")),
     ("mip", include_str!("wgsl/mip.wgsl")),
     ("spread", include_str!("wgsl/spread.wgsl")),
     ("gdir", include_str!("wgsl/gdir.wgsl")),
@@ -1134,6 +1135,22 @@ fn to_u8_start(canvas: &Img, dither: &Img) -> PyResult<Readback> {
     Ok(Readback { staging: Some(staging), si, n: n as usize, w: canvas.w as usize, h: canvas.h as usize })
 }
 
+/// the canvas over nothing → 8-bit RGBA with straight colour and its alpha (export with transparency), not waited for:
+/// `.get()` gives (h, w, 4). Was a float download and a numpy division on the CPU — ~2/3 of an alpha render's time
+#[pyfunction]
+fn to_rgba8_start(canvas: &Img) -> PyResult<Readback> {
+    let g = gpu()?;
+    let n = canvas.w * canvas.h;
+    let quads = n.div_ceil(4);
+    let out = g.buffer(quads as u64 * 16);
+    let mut p = Params::new();
+    p.u[0] = n;
+    g.run("straight8", &p, Some(&canvas.buf), &out, None, None, Gpu::line(quads));
+    let (staging, si) = g.start_read(&out, quads as u64 * 16);
+    g.give_back(out);
+    Ok(Readback { staging: Some(staging), si, n: n as usize, w: canvas.w as usize, h: canvas.h as usize })
+}
+
 /// a plain float array (h, w) — a matte or the dither pattern — on the GPU
 #[pyfunction]
 fn upload_plane(a: numpy::PyReadonlyArray2<f32>) -> PyResult<Img> {
@@ -1410,7 +1427,7 @@ fn kadr_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
               wrap_pyfunction!(grade, m)?, wrap_pyfunction!(matte, m)?, wrap_pyfunction!(cut_under, m)?, wrap_pyfunction!(copy, m)?,
               wrap_pyfunction!(from_skia, m)?, wrap_pyfunction!(project, m)?,
               wrap_pyfunction!(upload_source, m)?, wrap_pyfunction!(colorize, m)?, wrap_pyfunction!(gradient, m)?,
-              wrap_pyfunction!(motion_tile, m)?, wrap_pyfunction!(stats, m)?, wrap_pyfunction!(prep8, m)?, wrap_pyfunction!(to_u8_start, m)?, wrap_pyfunction!(shadow, m)?, wrap_pyfunction!(flush, m)?, wrap_pyfunction!(project_mb, m)?, wrap_pyfunction!(canvas_to8, m)?, wrap_pyfunction!(mip, m)?,
+              wrap_pyfunction!(motion_tile, m)?, wrap_pyfunction!(stats, m)?, wrap_pyfunction!(prep8, m)?, wrap_pyfunction!(to_u8_start, m)?, wrap_pyfunction!(to_rgba8_start, m)?,wrap_pyfunction!(shadow, m)?, wrap_pyfunction!(flush, m)?, wrap_pyfunction!(project_mb, m)?, wrap_pyfunction!(canvas_to8, m)?, wrap_pyfunction!(mip, m)?,
               wrap_pyfunction!(text::ft_setup, m)?, wrap_pyfunction!(text::glyph_cover, m)?] {
         m.add_function(f)?;
     }
