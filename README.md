@@ -85,5 +85,5 @@ ask you before downloading a model.
 
 ## Contributing, licence
 
-[CONTRIBUTING.md](CONTRIBUTING.md). MIT — [LICENSE](LICENSE). The bundled font Inter is under the SIL Open Font
-License.
+[CONTRIBUTING.md](CONTRIBUTING.md). MIT — [LICENSE](LICENSE). The bundled font Inter (`kadr/data/fonts`) is by The Inter
+Project Authors, under the SIL Open Font License 1.1 — `kadr/data/fonts/OFL.txt`.
