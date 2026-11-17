@@ -19,7 +19,7 @@ You need Python 3.10+ (3.13 is what it is tested on), a Rust toolchain (1.87+, f
 `ffprobe` on the PATH.
 
 ```bash
-git clone <this repository> kadr && cd kadr
+git clone https://github.com/mshhkv/kadr.git && cd kadr
 python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -e ".[serve]"                                 # the engine; [serve] adds the MCP server
 pip install maturin && (cd core && maturin develop --release)     # the GPU core (kadr_core), a few minutes
