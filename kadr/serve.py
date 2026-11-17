@@ -176,8 +176,8 @@ def info(film: str) -> str:
 
 @mcp.tool()
 def render(film: str, out: str, hw: bool = False, draft: bool = False, start: str = '', end: str = '', alpha: bool = False) -> str:
-    """The whole film (or start..end) to an mp4 in the background — kadr render --gpu. hw: the Mac's hardware HEVC
-    (as good as x264 medium, almost no CPU, twice the file); draft: x264 veryfast. alpha: with transparency, for laying
+    """The whole film (or start..end) to an mp4 in the background — kadr render --gpu. hw: this machine's hardware encoder (the Mac's HEVC:
+    as good as x264 medium, almost no CPU, twice the file; x264 where Kadr knows none); draft: x264 veryfast. alpha: with transparency, for laying
     over other footage in an editor — the film's `background` is left out, out must be .mov (ProRes 4444), .webm (VP9)
     or a folder pattern dir/%05d.png. Returns a job id for render_status."""
     film = os.path.abspath(os.path.expanduser(film))

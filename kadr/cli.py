@@ -10,7 +10,29 @@ from .render import Renderer, to_u8, font_file
 
 # the Mac's hardware HEVC at q 85: PSNR 48.2 against x264 medium's 48.0 on a 42 s reel, steadier frame to frame (mean
 # jump 0.18 dB against 0.23), ~3 % of the CPU — the file twice as large. hvc1: the tag Apple players and Instagram want
-HW = ['-c:v', 'hevc_videotoolbox', '-q:v', '85', '-tag:v', 'hvc1']
+# the hardware encoders `kadr render --hw` may use, best first: (ffmpeg's name, its arguments, the stream's tag in mp4).
+# A row is written only after it was measured on a real machine (AGENTS.md, «Windows and Linux»): its quality figure
+# is the one that gave there what x264 crf 18 medium gives, with the same colours. The Mac's: q 85.
+HW_ENCODERS = [('hevc_videotoolbox', ['-q:v', '85'], 'hvc1')]
+_hw = []
+
+
+def hw_encoder():
+    """the first of HW_ENCODERS that works on this machine → (ffmpeg arguments, tag), or None. «Works» is a small real
+    encode: ffmpeg lists encoders whose hardware is not there. $KADR_HW_ENCODER names the one row to try (to measure
+    one encoder against another on a machine that has several)"""
+    if not _hw:
+        _hw.append(None)
+        only = os.environ.get('KADR_HW_ENCODER')
+        for name, args, tag in HW_ENCODERS:
+            if only and name != only:
+                continue
+            r = subprocess.run(['ffmpeg', '-v', 'error', '-f', 'lavfi', '-i', 'color=c=gray:s=640x360:r=25:d=0.2', '-c:v', name, *args, '-pix_fmt', 'yuv420p', '-f', 'null', '-'],
+                               capture_output=True)
+            if r.returncode == 0:
+                _hw[0] = (['-c:v', name, *args, '-tag:v', tag], tag)
+                break
+    return _hw[0]
 # GPU render (16.11.2026, 15 s of a reel): 2 processes 39 s / 3.2 GB ≈ 3 processes 38.5 s / 3.5 GB — the GPU is
 # full with two; --lite: 2 threads of one process 48 s / 2.1 GB (each thread its own GPU queue; Python runs one thread
 # at a time, so the threads overlap only while one waits for the GPU)
@@ -101,7 +123,7 @@ def _block(job):
         return i1 - i0
     gpu = hasattr(film, 'frame_start')
     ff = subprocess.Popen(['ffmpeg', '-y', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgba' if gpu else 'rgb24', '-s', f'{f.W}x{f.H}', '-r', f'{f.fps:g}',
-                           '-i', '-', *(HW if preset == 'hw' else ['-c:v', 'libx264', '-crf', str(crf), '-preset', preset]), '-bf', '0',
+                           '-i', '-', *(hw_encoder()[0] if preset == 'hw' else ['-c:v', 'libx264', '-crf', str(crf), '-preset', preset]), '-bf', '0',
                            # RGB → YUV by the HD matrix, and say so in the file: ffmpeg's default is the SD matrix (BT.601) with no tag, and
                            # every player takes an untagged 1080p file for BT.709 — reds and greens came out a little off on a phone
                            '-vf', 'scale=out_color_matrix=bt709:out_range=tv', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
@@ -128,8 +150,10 @@ def _block(job):
 
 def cmd_render(a, film):
     from .audio import mix, SR, LIMITER
-    if a.hw and sys.platform != 'darwin':                      # the hardware encoder used is the Mac's; elsewhere: x264, said aloud
-        print('kadr render --hw: аппаратное кодирование пока только на Mac — кодирую x264 (как добавить кодер этой машины: AGENTS.md, «Windows and Linux»)', file=sys.stderr)
+    hw = hw_encoder() if a.hw and not a.alpha else None        # the hardware encoder of this machine, if Kadr knows one that works here
+    if a.hw and not a.alpha and hw is None:                    # none: x264, said aloud
+        print('kadr render --hw: аппаратного кодера, который Kadr знает, на этой машине нет — кодирую x264 (как добавить кодер своей видеокарты: AGENTS.md, «Windows and Linux»)',
+              file=sys.stderr)
     t0 = time.time()
     if not a.fg:
         # polite by default (15.11.2026: a render made video and sound on the same Mac stutter «like a chewed tape»):
@@ -154,7 +178,7 @@ def cmd_render(a, film):
             return 1
         os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     piece = lambda b: a.out if (a.alpha and ext == '.png') else os.path.join(tmp, f'{b:07}{ext if a.alpha else ".mp4"}')
-    jobs = [(b, min(b + BLOCK, i1), piece(b), a.crf, f'alpha:{ext}' if a.alpha else 'hw' if a.hw and sys.platform == 'darwin' else 'veryfast' if a.draft else a.preset) for b in range(i0, i1, BLOCK)]
+    jobs = [(b, min(b + BLOCK, i1), piece(b), a.crf, f'alpha:{ext}' if a.alpha else 'hw' if hw else 'veryfast' if a.draft else a.preset) for b in range(i0, i1, BLOCK)]
     done = 0
     os.environ['PYTHONSAFEPATH'] = '1'               # the workers: no module is ever taken from the current folder (a film's own folder may be a stranger's)
     with (ThreadPool if a.gpu and a.lite else Pool)(a.jobs, initializer=_init, initargs=(film.path, a.gpu)) as pool:
@@ -174,7 +198,7 @@ def cmd_render(a, film):
         cmd += ['-f', 'f32le', '-ac', '2', '-ar', str(SR), '-i', wav, '-map', '0:v', '-map', '1:a', '-filter:a', LIMITER + ',apad',
                 '-c:a', 'libopus' if ext == '.webm' else 'aac', '-b:a', '256k', '-shortest']   # the sound padded with silence: the video sets the end (it is
                                                               # up to a frame longer than a duration kept to 3 decimals)
-    cmd += ['-c:v', 'copy', *(['-tag:v', 'hvc1'] if a.hw else []), *([] if ext == '.webm' else ['-movflags', '+faststart']), a.out]
+    cmd += ['-c:v', 'copy', *(['-tag:v', hw[1]] if hw else []), *([] if ext == '.webm' else ['-movflags', '+faststart']), a.out]
     subprocess.run(cmd, check=True)
     shutil.rmtree(tmp, ignore_errors=True)
     dt = time.time() - t0
@@ -527,7 +551,7 @@ def main(argv=None):
     r.add_argument('--alpha', action='store_true', help='без фона фильма, с прозрачностью — графика, которую кладут поверх чужого монтажа: -o x.mov (ProRes 4444), x.webm (VP9) или папка/%%05d.png')
     r.add_argument('--jobs', type=int, default=None); r.add_argument('--crf', type=int, default=18)
     r.add_argument('--preset', default='medium', help='x264: medium для сдачи; fast на 16 %% дешевле почти без потерь')
-    r.add_argument('--hw', action='store_true', help='аппаратный HEVC мака (q 85): качество как у x264 medium и ровнее от кадра к кадру, кодирование почти бесплатно, файл вдвое больше')
+    r.add_argument('--hw', action='store_true', help='аппаратный кодер этой машины (на Mac — HEVC, q 85: качество как у x264 medium и ровнее от кадра к кадру, кодирование почти бесплатно, файл вдвое больше); где Kadr такого не знает — x264')
     r.add_argument('--draft', action='store_true', help='черновик: x264 veryfast, кодирование втрое дешевле (PSNR 45,8 против 48)')
     r.add_argument('--gpu', action='store_true', help='пиксели на видеокарте (kadr_core)')
     r.add_argument('--fg', action='store_true', help='обычный приоритет процессора вместо nice 10 (по умолчанию рендер уступает плееру и звуку)')

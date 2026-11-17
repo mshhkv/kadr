@@ -94,7 +94,7 @@ What is absent on purpose, and why:
 | Cut-outs: `kadr matte`, `cutout: true` | **no program to make them** (ready `*.matte.mp4` / `*.matte.png` play everywhere) | on a Mac this is Apple Vision, built into the system: nothing to download. Other systems have nothing like it built in, and Kadr does not ship a model it has not tested | write `kadr/matte_tool.py` — below |
 | `kadr reframe` (horizontal → vertical, following the person) | the same program | it asks the same program where the people and faces are | the same file |
 | `kadr puppet --pose` (joints of a person in a photo) | the same program | the same | the same file |
-| `kadr render --hw` | falls back to x264, says so | the hardware encoder used is the Mac's (`hevc_videotoolbox`) | optional: add this machine's encoder (`hevc_nvenc`, `hevc_qsv`, `hevc_amf`) beside `HW` in `kadr/cli.py`; check the colours against x264 before trusting it |
+| Fast encoding: `kadr render --hw` | **x264 on the processor**, said aloud | half of Kadr's speed on a Mac is its hardware encoder. `--hw` takes the first row of `HW_ENCODERS` (`kadr/cli.py`) that works on the machine, and the only row is the Mac's: the settings of another encoder are not guessed, they are measured | step 4: measure, decide, add the row |
 | Reference answers of the tests | some will differ | `tests/reg` keeps exact hashes of the CPU renderer's frames (another processor, another build of a library — another last bit); `tests/ae/ref` keeps GPU frames, compared with a tolerance | see step 3 |
 | Fonts | bundled Inter always works; system fonts by file name | families are found by file names in the system's font folders (`FONT_DIRS`, `kadr/render.py`) | add this system's folders and names if a font is not found |
 | Everything else (render, check, frame, sheet, scene, text, effects, 3D, sound, depth) | **written to work, never run** | the core is wgpu (D3D12 / Vulkan), no Apple-only code; the known breakages were fixed blind | steps 1–3 |
@@ -116,7 +116,41 @@ The order:
      there is more likely real. Do not re-save what you have not looked at: that turns a bug into the expected
      answer.
    The checks that need the Mac's vision print «пропущено» or «SKIP» and pass.
-4. **The matte program** — the one large missing piece. Everything that cuts out or finds people goes through
+4. **Speed: measure, then decide.** On a Mac a film renders fast for two reasons: the frames are drawn on the GPU
+   (`--gpu`) and encoded by the hardware (`--hw`). The first you have: the same core, on D3D12 or Vulkan, and it asks
+   the system for the strong card. The second you do not have yet. How this machine renders fastest is **yours to
+   find out by numbers** — nobody has measured it, and the defaults (`GPU_JOBS = 2`, the memory arithmetic of
+   `default_jobs()`) were found on a 16 GB Mac whose GPU shares memory with the processor.
+   - **Two films to measure on:** one of pure graphics (`tests/ae/_showcase.yaml`, `examples/figures/figures.yaml`)
+     and one of your user's kind — footage with graphics over it, at the size they deliver. `examples/hello` is too
+     small to tell anything.
+   - **Where the time goes.** `kadr render film.yaml --gpu -o a.mp4` prints frames, seconds and ms a frame. Render
+     it as it is (x264 `medium`) and with `--draft` (x264 `veryfast`, encoding about three times cheaper). If
+     `--draft` is hardly faster, encoding is not what you wait for and a hardware encoder will not help: look at
+     the drawing instead (`--jobs 1`, `2`, `3`, `4` — and at the memory while it runs).
+   - **The candidates.** `ffmpeg -hide_banner -encoders` names them: `hevc_nvenc` (NVIDIA), `hevc_qsv` (Intel),
+     `hevc_amf` (AMD); on Linux also `hevc_vaapi`, which wants the frames uploaded to the card first — more than a
+     row, a change in how the encoder is fed. A row is `(name, arguments, tag)`: the arguments set a **constant
+     quality** mode (not a bitrate), the tag is `hvc1` for HEVC in mp4. `KADR_HW_ENCODER=name` makes `--hw` try that
+     row alone, to compare one encoder with another on a machine that has two.
+   - **The quality figure** is found, not chosen. The reference is the same film at `--crf 0`. Then
+     `ffmpeg -i candidate.mp4 -i reference.mp4 -lavfi "[0:v][1:v]psnr" -f null -` for x264 as it is and for the
+     candidate: take the figure at which the candidate is not below x264, then look at the file size and at the
+     frames themselves — gradients, small text, a dark scene. (The Mac's row on `examples/hello`: 55.2 dB against
+     x264's 53.1.)
+   - **The colours.** The file must say `bt709` and `tv` (`ffprobe -show_entries stream=color_space,color_range`),
+     and must *be* that: take a frame out of the file (`ffmpeg -ss 2 -i film.mp4 -frames:v 1 f.png`) and the same
+     moment from `kadr frame --gpu`; the mean difference of each channel stays under 1 of 255 (the Mac's: under
+     0.5). A hardware encoder that ignores the matrix or the range shifts every colour a little — such a row is
+     not added until its arguments are right.
+   - **The speed**, on both films: x264 against `--hw`, and the number of `--jobs` again with the encoder you chose.
+     Keep the machine usable while it renders: Kadr runs at a low priority on purpose.
+   - **Decide.** Faster at the same quality and the same colours — add the row to `HW_ENCODERS` with a comment
+     (the card, the driver, the figures you measured) and, if another number of jobs won, make it this system's
+     default without changing the Mac's. Not faster, or the colours cannot be made right — leave x264 and write
+     why. `python tests/all.py traps` then renders with your row and checks the file.
+   Either way the numbers go into the README's «Platforms» table and to your user: ms a frame before and after.
+5. **The matte program** — the one large missing piece. Everything that cuts out or finds people goes through
    `kadr.matte.tool()`, which starts a program and talks to it in bytes: frames in, mattes (or numbers) out. On a Mac
    the program is `kadr/matte.swift`. Elsewhere it is **`kadr/matte_tool.py`, which you write** (or any program named
    in `$KADR_MATTE_TOOL`; a `.py` is run by the Python named in `$KADR_ML_PYTHON` or `~/.kadr/ml_python`, so the
@@ -135,8 +169,8 @@ The order:
      on a dark wall, hands.
    - `subject` with a point must follow the *same* thing from frame to frame; `soft` and `person` must not flicker
      between frames. A segmenter run frame by frame flickers — smooth it or use one that knows the frames before.
-5. **Write down what you found** for the next agent: fix the README's «Platforms» table to what is now true on this
+6. **Write down what you found** for the next agent: fix the README's «Platforms» table to what is now true on this
    system, add the traps to `skill/SKILL.md`. Tell your user what works, what does not, and what you installed.
 
-Until step 4 is done, films still render: only *making* cut-outs, reframing and pose-finding are missing, and Kadr
+Until step 5 is done, films still render: only *making* cut-outs, reframing and pose-finding are missing, and Kadr
 says so in words when asked for them.

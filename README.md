@@ -76,11 +76,12 @@ not protected: [SECURITY.md](SECURITY.md).
 |---|---|---|
 | check, render, frame, sheet, scene, text, effects, 3D, sound | tested | **not tested yet.** The core is wgpu (Metal / D3D12 / Vulkan) and has no Apple-only code, the known breakages were fixed blind; expect rough edges (fonts by family name, reference frames) |
 | `kadr matte`, `cutout`, `kadr reframe`, `kadr puppet --pose` | Apple Vision, built into the system | **left out on purpose**: nothing like it is built into these systems, and Kadr does not ship a model it has not tested. The socket is ready — one file, `kadr/matte_tool.py`, written once for the machine. Ready-made mattes play everywhere |
-| `kadr render --hw` | hardware HEVC | falls back to x264 |
+| Fast encoding: `kadr render --hw` | hardware HEVC | x264 on the processor until the machine's own hardware encoder is measured and added — the agent's task on a first run. Speed on these systems has not been measured |
 | `kadr depth` | yes | yes (PyTorch, in a Python of your choice: `KADR_ML_PYTHON`) |
 
 **On Windows or Linux, let your agent set the engine up first.** [`AGENTS.md`](AGENTS.md), «Windows and Linux», is its
-task list: build, run the tests, fix what breaks on this system in the engine itself, write the matte program. It will
+task list: build, run the tests, fix what breaks on this system in the engine itself, measure how this machine
+renders fastest (its hardware encoder, the number of jobs) and set that up, write the matte program. It will
 ask you before downloading a model.
 
 ## Contributing, licence

@@ -255,6 +255,31 @@ if mcp is not None:
 else:
     print('     (пакет mcp не установлен — проверки сервера пропущены)')
 
+# ---- kadr render --hw on a machine whose hardware encoder Kadr does not know (every one but a Mac, until a row is
+# added to HW_ENCODERS): the film is still made, by x264. It used to end in «Tag hvc1 incompatible»: the pieces were
+# x264 and the file was still labelled as HEVC
+import subprocess
+from kadr import cli
+
+
+def render_hw(name, env):
+    out = os.path.join(tempfile.mkdtemp(), name)
+    r = subprocess.run([sys.executable, '-m', 'kadr', 'render', os.path.join(ROOT, 'examples', 'hello', 'film.yaml'), '--gpu', '--hw', '--to', '1', '-o', out],
+                       capture_output=True, text=True, env=dict(os.environ, **env))
+    v = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_name,codec_tag_string,color_space,color_range', '-of', 'csv=p=0', out],
+                       capture_output=True, text=True).stdout.strip()
+    return r, v
+
+
+r, v = render_hw('none.mp4', {'KADR_HW_ENCODER': 'no_such_encoder'})
+ok('--hw без известного кодера: фильм собран x264 и об этом сказано', r.returncode == 0 and v.startswith('h264,avc1') and 'bt709' in v and 'x264' in r.stderr and 'AGENTS.md' in r.stderr,
+   f'{v}; {r.stderr.strip().splitlines()[0][:70] if r.stderr.strip() else ""}')
+if cli.hw_encoder():
+    r, v = render_hw('hw.mp4', {})
+    ok('--hw с кодером этой машины: файл его кодеком, с его меткой и теми же цветовыми пометками', r.returncode == 0 and v.split(',')[1] == cli.hw_encoder()[1] and 'bt709' in v and ',tv' in v, v)
+else:
+    print('     (аппаратного кодера, известного Kadr, на этой машине нет — проверка с ним пропущена)')
+
 print()
 print('ВСЁ СХОДИТСЯ' if not bad else f'НЕ СХОДИТСЯ: {len(bad)} — ' + '; '.join(bad))
 sys.exit(1 if bad else 0)
